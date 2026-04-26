@@ -47,8 +47,8 @@ import {
   createOrderSchema,
   PAYMENT_STATUS_OPTIONS,
   PAYMENT_TYPE_OPTIONS,
-  SERVICE_TYPE_OPTIONS,
   SERVICE_TYPE_MAPPER,
+  SERVICE_TYPE_OPTIONS,
   toFormPaymentStatus,
   type CreateOrderFormData
 } from "@/lib/schemas/order-schemas";
@@ -1305,12 +1305,8 @@ export default function UpdateOrderWizardRestrictedScreen() {
       }
 
       let patientMetadataToUpdate = currentOrderData.patientMetadata || [];
-      const metadataStatusOnApprove =
-        (currentOrderData.paymentType || "").toUpperCase() === "ONLINE_PAYMENT" &&
-          !Boolean(currentOrderData.customerFastq)
-          ? "sample_waiting_analyze"
-          : "accepted";
-      if (prevStatus !== "accepted" && newStatus === "accepted") {
+      const metadataStatusOnApprove = "sample_waiting_analyze";
+      if (prevStatus !== "accepted" && newStatus === "accepted" && isPaymentCompletedOnSubmit) {
         if (ensureMetadataResult.createdLabRows > 0 || ensureMetadataResult.linkedOrders > 0) {
           const refreshedOrderRes = await orderService.getById(orderId!);
           if (refreshedOrderRes?.success && (refreshedOrderRes as any).data) {
@@ -1362,7 +1358,7 @@ export default function UpdateOrderWizardRestrictedScreen() {
           if (pm.labcode) await patientMetadataService.updateStatus(pm.labcode, metadataStatusOnApprove).catch(() => { });
         }
       }
-      if (isApprovalFlow && specifyVoteID) {
+      if (isApprovalFlow && specifyVoteID && isPaymentCompletedOnSubmit) {
         try {
           await specifyVoteTestService.updateStatus(specifyVoteID, "accepted");
           const bySpecifyRes = await patientMetadataService.getBySpecifyId(specifyVoteID);
@@ -1652,7 +1648,7 @@ export default function UpdateOrderWizardRestrictedScreen() {
                     >
                       <ScrollView keyboardShouldPersistTaps="handled">
                         {patientPhoneSearchTerm.length < MIN_PHONE_SEARCH_LENGTH &&
-                        patientPhoneSearchTerm.length > 0 ? (
+                          patientPhoneSearchTerm.length > 0 ? (
                           <Text className="p-3 text-slate-500">Nhập thêm số để tìm bệnh nhân</Text>
                         ) : null}
                         {isSearchingPatients ? (
@@ -1857,9 +1853,8 @@ export default function UpdateOrderWizardRestrictedScreen() {
                         );
                         setServiceDropdownOpen(false);
                       }}
-                      className={`px-4 py-3 flex-row items-center justify-between ${
-                        isSelected ? "bg-cyan-50" : "bg-white"
-                      } ${!isLast ? "border-b border-slate-100" : ""}`}
+                      className={`px-4 py-3 flex-row items-center justify-between ${isSelected ? "bg-cyan-50" : "bg-white"
+                        } ${!isLast ? "border-b border-slate-100" : ""}`}
                     >
                       <Text className={`text-[13px] font-bold ${isSelected ? "text-cyan-700" : "text-slate-700"}`}>
                         {s.label}
