@@ -1,0 +1,195 @@
+import { Order, Patient, Service, User, AdditionalSample, PrescriptionSlip } from "@/types";
+
+export const mockUser: User = {
+  id: "1",
+  accountCode: "0000000001",
+  email: "admin@htgen.com",
+  name: "HT Gen",
+  phone: "0999999999",
+  gender: "Nam",
+  department: "Trống",
+  dateOfBirth: "Trống",
+};
+
+export const mockOrders: Order[] = [
+  {
+    id: "1",
+    code: "HT231061",
+    name: "Mobile 6",
+    patientName: "",
+    testName: "",
+    status: "processing",
+    date: "14/09/2023",
+    createdAt: new Date("2023-09-14"),
+    amount: 0,
+    customer: "Phòng Khám ĐK Tư Nhân 996 - Đê La Thành",
+  },
+  {
+    id: "2",
+    code: "HT231517",
+    name: "OncoKphoi",
+    patientName: "Nguyễn Trung Sơn",
+    testName: "",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    amount: 14000000,
+    customer: "Công Ty Di Truyền Công Nghệ C",
+    hasDownload: true,
+  },
+  {
+    id: "3",
+    code: "HT238938",
+    name: "Nipt24 - Bùi Thị Thuý Hà - Bs Hà",
+    patientName: "Bùi thị thuỷ hà",
+    testName: "",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    amount: 5400000,
+    customer: "Công Ty Di Truyền Công Nghệ Cao Vi",
+    hasDownload: true,
+  },
+  {
+    id: "4",
+    code: "HT236883",
+    name: "Đơn hàng 2",
+    patientName: "Trần Kim Phúc",
+    testName: "",
+    status: "processing",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    amount: 1000000,
+  },
+  {
+    id: "5",
+    code: "HT233000",
+    name: "Đơn hàng 1",
+    patientName: "Nguyễn Thị Thành",
+    testName: "",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    amount: 1500000,
+    customer: "Phòng Khám ĐK Tư Nhân 996 - Đế",
+    hasDownload: true,
+  },
+  {
+    id: "6",
+    code: "HT236297",
+    name: "mobile 4",
+    patientName: "Trần Kim Phúc",
+    testName: "",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    amount: 6000000,
+    customer: "Phòng Khám ĐK Tư Nhân 996 - Đê La",
+    hasDownload: true,
+  },
+];
+
+export const mockPrescriptionSlips: PrescriptionSlip[] = [
+  {
+    id: "1",
+    code: "S236157",
+    testName: "Xét nghiệm DNA",
+    status: "cancelled",
+    date: "03/11/2023",
+    createdAt: new Date("2023-11-03"),
+  },
+  {
+    id: "2",
+    code: "S239934",
+    testName: "Xét nghiệm gen",
+    status: "processing",
+    date: "14/09/2023",
+    createdAt: new Date("2023-09-14"),
+  },
+  {
+    id: "3",
+    code: "B237717",
+    testName: "WES - 18 nhóm bệnh",
+    patientName: "Nguyễn Trung Sơn",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    hasDownload: true,
+  },
+  {
+    id: "4",
+    code: "S232665",
+    testName: "Sàng lọc tiền sinh k...",
+    patientName: "Bùi thị thuý hà",
+    status: "completed",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+    hasDownload: true,
+  },
+  {
+    id: "5",
+    code: "B236879",
+    testName: "Rubella (PCR)",
+    patientName: "Trần Kim Phúc",
+    status: "processing",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+  },
+  {
+    id: "6",
+    code: "P232746",
+    testName: "Sàng lọc tiền sinh k...",
+    status: "pending",
+    date: "13/09/2023",
+    createdAt: new Date("2023-09-13"),
+  },
+];
+
+export const mockPatients: Patient[] = [
+  {
+    id: "1",
+    code: "BN001",
+    name: "Nguyễn Văn A",
+    gender: "Nam",
+    phone: "0901234567",
+    address: "Hà Nội",
+  },
+  {
+    id: "2",
+    code: "BN002",
+    name: "Trần Thị B",
+    gender: "Nữ",
+    phone: "0912345678",
+    address: "Hồ Chí Minh",
+  },
+];
+
+export const mockServices: Service[] = [
+  {
+    id: "1",
+    code: "DV001",
+    name: "Xét nghiệm DNA",
+    category: "Gen",
+    price: 2000000,
+  },
+  {
+    id: "2",
+    code: "DV002",
+    name: "Xét nghiệm WES",
+    category: "Gen",
+    price: 15000000,
+  },
+];
+
+export const mockAdditionalSamples: AdditionalSample[] = [
+  {
+    id: "1",
+    code: "MB001",
+    orderCode: "S236157",
+    patientName: "Nguyễn Văn A",
+    requestDate: "05/11/2023",
+    status: "pending",
+  },
+];
+
+export const mockPendingOrdersCount = 21;
