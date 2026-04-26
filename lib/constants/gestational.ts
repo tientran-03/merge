@@ -1,0 +1,2 @@
+export const MAX_GESTATIONAL_WEEKS = 40;
+export const MAX_GESTATIONAL_DAYS = 30;

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916595338688",
+    "project_id": "casptone-568cd",
+    "storage_bucket": "casptone-568cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916595338688:android:7328f037a77ef3a3e6ac25",
+        "android_client_info": {
+          "package_name": "com.htgenetic.io.vn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB29Z1sBpDC_au6-tYutvQHlg8paRMqciU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
