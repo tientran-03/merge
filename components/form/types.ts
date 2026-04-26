@@ -1,6 +1,6 @@
-import type { LucideIcon } from "lucide-react-native";
-import type { ControllerProps } from "react-hook-form";
-import type { TextInputProps, ViewStyle } from "react-native";
+import type { LucideIcon } from 'lucide-react-native';
+import type { ControllerProps } from 'react-hook-form';
+import type { TextInputProps, ViewStyle } from 'react-native';
 
 export interface BaseFieldProps {
   label?: string;
@@ -13,7 +13,7 @@ export interface BaseFieldProps {
 
 export interface IconProps {
   icon?: React.ReactNode;
-  iconPosition?: "left" | "right";
+  iconPosition?: 'left' | 'right';
 }
 
 export interface SelectOption {
@@ -26,17 +26,16 @@ export type FormFieldRef<T = unknown> = React.RefObject<T>;
 export interface FormInputProps extends TextInputProps, BaseFieldProps, IconProps {
   name: string;
   formatter?: (value: string) => string;
+  validateOnChange?: boolean;
 }
 
-export type NumericFormatterType = "currency" | "phone" | "decimal" | "integer";
+export type NumericFormatterType = 'currency' | 'phone' | 'decimal' | 'integer';
 
 export interface FormNumericInputProps extends BaseFieldProps, IconProps {
   name: string;
   type: NumericFormatterType;
   placeholder?: string;
   disabled?: boolean;
-  /** Khi có (vd 100 cho thuế %): không cho nhập số vượt quá — giữ giá trị cũ như web */
-  numericMax?: number;
 }
 
 export interface FormTextareaProps extends BaseFieldProps {
@@ -45,7 +44,8 @@ export interface FormTextareaProps extends BaseFieldProps {
   minHeight?: number;
   maxLength?: number;
   disabled?: boolean;
-  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  validateOnChange?: boolean;
 }
 
 export interface FormReadOnlyProps extends BaseFieldProps, IconProps {
@@ -58,7 +58,7 @@ export interface FormFieldGroupProps {
   gap?: number;
 }
 
-export type InfoBoxVariant = "info" | "success" | "warning" | "error";
+export type InfoBoxVariant = 'info' | 'success' | 'warning' | 'error';
 
 export interface FormInfoBoxProps {
   variant?: InfoBoxVariant;
@@ -78,6 +78,12 @@ export interface FormSelectProps<T = unknown> extends BaseFieldProps {
   modalTitle?: string;
   emptyMessage?: string;
   renderOption?: (item: T, isSelected: boolean, onSelect: () => void) => React.ReactNode;
+  onValueChange?: (
+    value: string | number | boolean,
+    item?: T,
+    previousValue?: string | number | boolean
+  ) => boolean | void;
+  validateOnChange?: boolean;
 }
 
 export interface FormDatePickerProps extends BaseFieldProps {
@@ -86,7 +92,8 @@ export interface FormDatePickerProps extends BaseFieldProps {
   disabled?: boolean;
   minimumDate?: Date;
   maximumDate?: Date;
-  mode?: "date" | "time" | "datetime";
+  mode?: 'date' | 'time' | 'datetime';
+  validateOnChange?: boolean;
 }
 
 export type { LucideIcon };

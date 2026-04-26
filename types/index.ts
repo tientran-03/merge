@@ -1,21 +1,23 @@
 export type OrderStatus =
-  | "initiation"
-  | "forward_analysis"
-  | "accepted"
-  | "rejected"
-  | "in_progress"
-  | "sample_error"
-  | "rerun_testing"
-  | "completed"
-  | "sample_addition";
+  | 'initiation'
+  | 'forward_analysis'
+  | 'accepted'
+  | 'rejected'
+  | 'in_progress'
+  | 'sample_error'
+  | 'rerun_testing'
+  | 'awaiting_results_approval'
+  | 'results_approved'
+  | 'completed'
+  | 'sample_addition';
 
-export type PaymentStatus = "PENDING" | "COMPLETED" | "FAILED" | "UNPAID";
+export type PaymentStatus = 'COMPLETED' | 'UNPAID';
 
-export type PaymentType = "CASH" | "ONLINE_PAYMENT";
+export type PaymentType = 'CASH' | 'ONLINE_PAYMENT';
 
-export type ServiceType = "embryo" | "disease" | "reproduction";
+export type ServiceType = 'embryo' | 'disease' | 'reproduction';
 
-export type Gender = "MALE" | "FEMALE" | "OTHER";
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export interface Order {
   id: string;
@@ -70,9 +72,10 @@ export interface User {
   department: string;
   hospitalName: string;
   dateOfBirth: string;
-  hospitalId: string;
+  hospitalId: string | null;
+  role?: string;
   avatarUrl?: string;
-  role?: string; // ROLE_ADMIN, ROLE_STAFF, ...
+  address?: string;
 }
 
 export interface AdditionalSample {
@@ -81,5 +84,5 @@ export interface AdditionalSample {
   orderCode: string;
   patientName: string;
   requestDate: string;
-  status: "pending" | "completed";
+  status: 'pending' | 'completed';
 }

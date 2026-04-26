@@ -1,32 +1,9 @@
-import { API_ENDPOINTS } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/api';
+import { setTrustedDeviceToken } from '@/lib/trustedDeviceToken';
 
-import { apiClient, type ApiResponse } from "./api";
+import { apiClient } from './api';
 
-/** Khớp backend / web admin (TrustDeviceRequest) */
-export type TrustDeviceRequest = {
-  ipAddress?: string;
-  browser?: string;
-  os?: string;
-  deviceType?: string;
-  deviceName?: string;
-  screen?: string;
-};
-
-export type ActiveSessionResponse = {
-  sessionId: string;
-  ipAddress?: string;
-  browser?: string;
-  os?: string;
-  deviceType?: string;
-  deviceName?: string;
-  screen?: string;
-  createdAt: number;
-  expiresAt: number;
-  currentSession: boolean;
-  trusted: boolean;
-};
-
-export type TrustedDeviceResponse = {
+export interface TrustedDeviceResponse {
   id: number;
   userId: string;
   deviceToken: string;
@@ -38,28 +15,48 @@ export type TrustedDeviceResponse = {
   screen?: string;
   lastUsed?: string;
   createdAt?: string;
-};
+}
+
+export interface ActiveSessionResponse {
+  sessionId: string;
+  ipAddress?: string;
+  browser?: string;
+  os?: string;
+  deviceType?: string;
+  deviceName?: string;
+  screen?: string;
+  createdAt: number;
+  expiresAt: number;
+  currentSession: boolean;
+  trusted: boolean;
+}
+
+export interface TrustDeviceRequest {
+  ipAddress?: string;
+  browser?: string;
+  os?: string;
+  deviceType?: string;
+  deviceName?: string;
+  screen?: string;
+}
 
 export const deviceService = {
-  getActiveSessions(): Promise<ApiResponse<ActiveSessionResponse[]>> {
-    return apiClient.get<ActiveSessionResponse[]>(API_ENDPOINTS.DEVICES_SESSIONS);
+  getTrustedDevices: () => apiClient.get<TrustedDeviceResponse[]>(API_ENDPOINTS.DEVICES_TRUSTED),
+
+  getActiveSessions: () => apiClient.get<ActiveSessionResponse[]>(API_ENDPOINTS.DEVICES_SESSIONS),
+
+  trustDevice: async (body: TrustDeviceRequest) => {
+    const res = await apiClient.post<TrustedDeviceResponse>(API_ENDPOINTS.DEVICES_TRUST, body);
+    const data = res.data as TrustedDeviceResponse | undefined;
+    if (res.success && data?.deviceToken) {
+      await setTrustedDeviceToken(data.deviceToken);
+    }
+    return res;
   },
 
-  getTrustedDevices(): Promise<ApiResponse<TrustedDeviceResponse[]>> {
-    return apiClient.get<TrustedDeviceResponse[]>(API_ENDPOINTS.DEVICES_TRUSTED);
-  },
+  removeTrustedDevice: (id: number) =>
+    apiClient.delete<boolean>(API_ENDPOINTS.DEVICES_TRUSTED_BY_ID(id)),
 
-  trustDevice(
-    body: TrustDeviceRequest
-  ): Promise<ApiResponse<TrustedDeviceResponse>> {
-    return apiClient.post<TrustedDeviceResponse>(API_ENDPOINTS.DEVICES_TRUST, body);
-  },
-
-  logoutSession(sessionId: string): Promise<ApiResponse<boolean>> {
-    return apiClient.post<boolean>(API_ENDPOINTS.DEVICES_SESSION_LOGOUT(sessionId));
-  },
-
-  removeTrustedDevice(id: number): Promise<ApiResponse<boolean>> {
-    return apiClient.delete<boolean>(API_ENDPOINTS.DEVICES_TRUSTED_BY_ID(id));
-  },
+  logoutSession: (sessionId: string) =>
+    apiClient.post<boolean>(API_ENDPOINTS.DEVICES_SESSION_LOGOUT(sessionId), {}),
 };

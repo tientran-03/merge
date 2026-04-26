@@ -1,6 +1,6 @@
 import { Check } from "lucide-react-native";
 import React from "react";
-import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Modal, Platform, Pressable, Text, TouchableOpacity, View } from "react-native";
 
 import { COLORS } from "@/constants/colors";
 
@@ -79,11 +79,20 @@ export function OrderFormSuccessModal({
               className="flex-1 items-center justify-center rounded-2xl py-3.5"
               style={{
                 backgroundColor: COLORS.primary,
-                shadowColor: COLORS.primary,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.25,
-                shadowRadius: 10,
-                elevation: 6,
+                ...Platform.select({
+                  ios: {
+                    shadowColor: COLORS.primary,
+                    shadowOffset: { width: 0, height: 6 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 10,
+                  },
+                  android: {
+                    elevation: 6,
+                  },
+                  web: {
+                    boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.25)",
+                  },
+                }),
               }}
             >
               <Text className="text-[15px] font-extrabold text-white">Xem danh sách</Text>

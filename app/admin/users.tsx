@@ -61,12 +61,12 @@ import { uploadImageToCloudinary } from "@/utils/cloudinary";
 const getRoleLabel = (role?: string): string => {
   if (!role) return "N/A";
   const roleMap: Record<string, string> = {
-    ROLE_ADMIN: "Admin",
-    ROLE_STAFF: "Nhân viên",
-    ROLE_DOCTOR: "Bác sĩ",
-    ROLE_CUSTOMER: "Khách hàng",
-    ROLE_LAB_TECHNICIAN: "Kỹ thuật viên",
-    ROLE_SAMPLE_COLLECTOR: "Người thu mẫu",
+    "ROLE_ADMIN": "Admin",
+    "ROLE_STAFF": "Nhân viên",
+    "ROLE_DOCTOR": "Bác sĩ",
+    "ROLE_CUSTOMER": "Khách hàng",
+    "ROLE_LAB_TECHNICIAN": "Kỹ thuật viên",
+    "ROLE_SAMPLE_COLLECTOR": "Người thu mẫu",
   };
   return roleMap[role] || role;
 };

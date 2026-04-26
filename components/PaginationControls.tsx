@@ -2,6 +2,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 
+import { MEDICAL } from "@/lib/theme/medical";
+
 export interface PaginationControlsProps {
   currentPage: number; // 0-based
   totalPages: number;
@@ -41,17 +43,16 @@ export function PaginationControls({
           <TouchableOpacity
             onPress={() => onPageChange(currentPage - 1)}
             disabled={!canGoPrevious || isLoading}
-            className="px-3 py-2 rounded-xl border"
-            style={
+            className={`px-3 py-2 rounded-xl border ${
               canGoPrevious && !isLoading
-                ? { backgroundColor: "#ffffff", borderColor: "#bae6fd" }
-                : { backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }
-            }
+                ? "bg-white border-sky-200"
+                : "bg-sky-50/80 border-sky-100"
+            }`}
             activeOpacity={0.7}
           >
             <ChevronLeft
               size={18}
-              color={canGoPrevious && !isLoading ? "#0284C7" : "#94A3B8"}
+              color={canGoPrevious && !isLoading ? MEDICAL.primary : "#94A3B8"}
             />
           </TouchableOpacity>
 
@@ -64,17 +65,16 @@ export function PaginationControls({
           <TouchableOpacity
             onPress={() => onPageChange(currentPage + 1)}
             disabled={!canGoNext || isLoading}
-            className="px-3 py-2 rounded-xl border"
-            style={
+            className={`px-3 py-2 rounded-xl border ${
               canGoNext && !isLoading
-                ? { backgroundColor: "#ffffff", borderColor: "#bae6fd" }
-                : { backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }
-            }
+                ? "bg-white border-sky-200"
+                : "bg-sky-50/80 border-sky-100"
+            }`}
             activeOpacity={0.7}
           >
             <ChevronRight
               size={18}
-              color={canGoNext && !isLoading ? "#0284C7" : "#94A3B8"}
+              color={canGoNext && !isLoading ? MEDICAL.primary : "#94A3B8"}
             />
           </TouchableOpacity>
         </View>

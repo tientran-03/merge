@@ -14,6 +14,7 @@ export const FormInput = forwardRef<TextInput, FormInputProps>(
       icon,
       iconPosition = "left",
       formatter,
+      validateOnChange,
       className = "",
       placeholder,
       keyboardType = "default",
@@ -25,11 +26,18 @@ export const FormInput = forwardRef<TextInput, FormInputProps>(
     },
     ref
   ) => {
-    const { control } = useFormContext();
+    const { control, formState: { errors }, trigger } = useFormContext();
+    const error = errors[name];
+
+    const hasError = !!error;
+    const borderColor = hasError ? "border-red-400" : !editable ? "border-slate-100" : "border-slate-200";
     const iconElement = icon && <View className="mr-3">{icon}</View>;
 
     return (
-      <View className={`mb-4 ${containerClassName}`} style={containerStyle}>
+      <View
+        className={`mb-4 ${containerClassName}`}
+        style={[{ alignSelf: "stretch", width: "100%" }, containerStyle]}
+      >
         {label && (
           <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
             {label} {required ? <Text className="text-red-500">*</Text> : null}
@@ -38,46 +46,41 @@ export const FormInput = forwardRef<TextInput, FormInputProps>(
         <Controller
           control={control}
           name={name}
-          render={({ field: { onChange, onBlur, value }, fieldState }) => {
-            const error = fieldState.error;
-            const hasError = !!error;
-            const borderColor = hasError ? "border-red-400" : !editable ? "border-slate-100" : "border-slate-200";
-            return (
-              <>
-                <View
-                  className={`bg-white rounded-2xl border px-4 py-3.5 flex-row items-center ${borderColor}`}
-                >
-                  {iconPosition === "left" && iconElement}
-                  <TextInput
-                    ref={ref}
-                    className={`flex-1 text-[14px] font-bold text-slate-800 ${className}`}
-                    placeholder={placeholder}
-                    placeholderTextColor="#94A3B8"
-                    value={value || ""}
-                    onChangeText={(text) => {
-                      const formatted = formatter ? formatter(text) : text;
-                      onChange(formatted);
-                    }}
-                    onBlur={onBlur}
-                    keyboardType={keyboardType}
-                    autoCapitalize={autoCapitalize}
-                    editable={editable}
-                    {...props}
-                  />
-                  {iconPosition === "right" && iconElement}
-                </View>
-                {error && (
-                  <Text className="text-[11px] text-red-500 mt-1">
-                    {(error as FieldError)?.message?.toString() || "Giá trị không hợp lệ"}
-                  </Text>
-                )}
-                {helperText && !error && (
-                  <Text className="mt-2 text-[11px] text-slate-500">{helperText}</Text>
-                )}
-              </>
-            );
-          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View
+              className={`w-full bg-white rounded-2xl border px-4 py-3.5 flex-row items-center ${borderColor}`}
+            >
+              {iconPosition === "left" && iconElement}
+              <TextInput
+                ref={ref}
+                className={`flex-1 text-[14px] font-bold text-slate-800 ${className}`}
+                placeholder={placeholder}
+                placeholderTextColor="#94A3B8"
+                value={value === null || value === undefined ? "" : String(value)}
+                onChangeText={(text) => {
+                  const formatted = formatter ? formatter(text) : text;
+                  onChange(formatted);
+                  if (validateOnChange) void trigger(name);
+                }}
+                onBlur={onBlur}
+                keyboardType={keyboardType}
+                autoCapitalize={autoCapitalize}
+                editable={editable}
+                {...props}
+                style={[{ flexGrow: 1, flexShrink: 1, minWidth: 0 }, (props as any).style]}
+              />
+              {iconPosition === "right" && iconElement}
+            </View>
+          )}
         />
+        {error && (
+          <Text className="text-[11px] text-red-500 mt-1">
+            {(error as FieldError)?.message?.toString() || "Giá trị không hợp lệ"}
+          </Text>
+        )}
+        {helperText && !error && (
+          <Text className="mt-2 text-[11px] text-slate-500">{helperText}</Text>
+        )}
       </View>
     );
   }

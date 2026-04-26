@@ -1,13 +1,15 @@
 import React from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
-import { View, Text, TouchableOpacity, Switch } from 'react-native';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
+import { ActivityIndicator, Switch, Text, TouchableOpacity, View } from 'react-native';
 
-import { FormInput, FormFieldGroup, FormDatePicker } from '@/components/form';
+import { FormDatePicker, FormFieldGroup, FormInput } from '@/components/form';
 import { ServiceType } from '@/lib/schemas/order-form-schema';
 
 interface Step6Props {
   isEditMode?: boolean;
   onManualServiceTypeSet?: () => void;
+  onQuickCreateSpecify?: () => Promise<void> | void;
+  creatingSpecify?: boolean;
 }
 
 const serviceTypeOptions: { value: ServiceType; label: string }[] = [
@@ -16,15 +18,45 @@ const serviceTypeOptions: { value: ServiceType; label: string }[] = [
   { value: ServiceType.DISEASE, label: 'Nhóm bệnh lý' },
 ];
 
-export default function Step6ServiceType({ isEditMode = false, onManualServiceTypeSet }: Step6Props) {
+export default function Step6ServiceType({
+  isEditMode = false,
+  onManualServiceTypeSet,
+  onQuickCreateSpecify,
+  creatingSpecify = false,
+}: Step6Props) {
   const { control } = useFormContext();
-  const readOnly = isEditMode;
+  const genomeTestIdValue = useWatch({ control, name: 'genomeTestId' });
+  const testNameValue = useWatch({ control, name: 'testName' });
+  const testContentValue = useWatch({ control, name: 'testContent' });
+  const testSampleValue = useWatch({ control, name: 'testSample' });
 
+  const hasExistingServiceData =
+    Boolean(String(genomeTestIdValue || '').trim()) ||
+    Boolean(String(testNameValue || '').trim()) ||
+    Boolean(String(testContentValue || '').trim()) ||
+    Boolean(String(testSampleValue || '').trim());
+
+  const readOnly = Boolean(isEditMode && hasExistingServiceData);
   return (
     <View className="bg-white rounded-2xl border border-slate-100 p-4">
       <Text className="text-[15px] font-extrabold text-slate-900 mb-4">
         Thông tin nhóm xét nghiệm
       </Text>
+      {onQuickCreateSpecify ? (
+        <TouchableOpacity
+          onPress={() => void onQuickCreateSpecify()}
+          disabled={creatingSpecify}
+          activeOpacity={0.85}
+          className={`mb-4 rounded-xl px-3 py-3 items-center justify-center border ${creatingSpecify ? 'bg-slate-100 border-slate-200' : 'bg-cyan-50 border-cyan-200'
+            }`}
+        >
+          {creatingSpecify ? (
+            <ActivityIndicator color="#0891b2" />
+          ) : (
+            <Text className="text-[13px] font-extrabold text-cyan-700">Tạo nhanh phiếu xét nghiệm</Text>
+          )}
+        </TouchableOpacity>
+      ) : null}
       <View className="mb-4">
         <Text className="text-[13px] font-extrabold text-slate-700 mb-2">Loại xét nghiệm</Text>
         <Controller
@@ -33,38 +65,30 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
           render={({ field: { onChange, value } }) => {
             return (
               <>
-                {!value && (
-                  <Text className="text-[12px] text-slate-500 mb-3">
-                    Vui lòng chọn loại xét nghiệm để tiếp tục
-                  </Text>
-                )}
+                <Text className="text-[12px] text-slate-500 mb-3">
+                  Chọn một nhóm dịch vụ để hiển thị đúng trường thông tin.
+                </Text>
                 <View className="flex-row gap-2">
                   {serviceTypeOptions.map(option => {
                     const isSelected = value === option.value;
-                    
                     return (
                       <TouchableOpacity
                         key={option.value}
                         onPress={() => {
+                          if (readOnly) return;
                           onChange(option.value);
                           onManualServiceTypeSet?.();
                         }}
-                        className={`flex-1 py-3 px-3 rounded-xl border ${
-                          isSelected
-                            ? 'bg-cyan-50 border-cyan-400'
-                            : 'bg-white border-slate-200'
-                        } ${!value ? 'border-orange-200 bg-orange-50/30' : ''}`}
-                        activeOpacity={readOnly ? 1 : 0.7}
                         disabled={readOnly}
+                        activeOpacity={0.85}
+                        className={`flex-1 rounded-xl px-3 py-3 border ${isSelected
+                          ? 'bg-cyan-50 border-cyan-300'
+                          : 'bg-white border-slate-200'
+                          } ${readOnly ? 'opacity-60' : ''}`}
                       >
                         <Text
-                          className={`text-center text-[13px] font-bold ${
-                            isSelected 
-                              ? 'text-cyan-700' 
-                              : !value 
-                                ? 'text-orange-600' 
-                                : 'text-slate-600'
-                          }`}
+                          className={`text-[13px] font-extrabold text-center ${isSelected ? 'text-cyan-700' : 'text-slate-700'
+                            }`}
                         >
                           {option.label}
                         </Text>
@@ -84,6 +108,8 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
                         label="Tuần thai"
                         placeholder="0"
                         keyboardType="numeric"
+                        formatter={v => v.replace(/\D/g, '')}
+                        validateOnChange
                         editable={!readOnly}
                       />
                       <FormInput
@@ -91,6 +117,8 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
                         label="Ngày thai"
                         placeholder="Nhập số"
                         keyboardType="numeric"
+                        formatter={v => v.replace(/\D/g, '')}
+                        validateOnChange
                         editable={!readOnly}
                       />
                     </FormFieldGroup>
@@ -101,6 +129,7 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
                         label="Chiều dài đầu mông (mm)"
                         placeholder="Nhập chiều cao"
                         keyboardType="numeric"
+                        validateOnChange
                         editable={!readOnly}
                       />
                       <FormDatePicker
@@ -124,6 +153,7 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
                         label="Độ mờ da gáy"
                         placeholder="Nhập độ mờ da gáy"
                         keyboardType="numeric"
+                        validateOnChange
                         editable={!readOnly}
                       />
                     </FormFieldGroup>
@@ -292,9 +322,6 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
                   <View className="p-4 bg-orange-50 rounded-xl border border-orange-200 mt-4">
                     <View className="flex-row items-center">
                       <View className="w-2 h-2 bg-orange-500 rounded-full mr-2" />
-                      <Text className="text-[13px] text-orange-700 font-medium">
-                        Vui lòng chọn loại xét nghiệm ở trên để tiếp tục
-                      </Text>
                     </View>
                   </View>
                 )}
@@ -304,13 +331,21 @@ export default function Step6ServiceType({ isEditMode = false, onManualServiceTy
         />
       </View>
 
-      {isEditMode && (
-        <View className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
-          <Text className="text-[11px] text-amber-700 font-medium">
-            Lưu ý: Thông tin nhóm xét nghiệm chỉ có thể chỉnh sửa trên trang web.
-          </Text>
-        </View>
-      )}
+      {isEditMode ? (
+        readOnly ? (
+          <View className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+            <Text className="text-[11px] text-amber-700 font-medium">
+              Đã có dữ liệu xét nghiệm, không cho đổi nhóm dịch vụ.
+            </Text>
+          </View>
+        ) : (
+          <View className="mt-4 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+            <Text className="text-[11px] text-emerald-700 font-medium">
+              Chưa có dữ liệu, có thể đổi nhóm dịch vụ.
+            </Text>
+          </View>
+        )
+      ) : null}
     </View>
   );
 }

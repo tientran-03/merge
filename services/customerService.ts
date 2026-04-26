@@ -5,25 +5,11 @@ import { apiClient } from "./api";
 export interface CustomerResponse {
   customerId: string;
   customerName: string;
-  customerGender?: string;
-  customerDob?: string;
   customerEmail?: string;
   customerPhone?: string;
   customerAddress?: string;
   hospitalId?: string;
-  hospitalName?: string;
   userId?: string;
-}
-
-export interface CustomerRequest {
-  customerName: string;
-  customerGender?: string;
-  customerDob?: string;
-  customerEmail?: string;
-  customerPhone?: string;
-  customerAddress?: string;
-  hospitalId?: string;
-  userId: string;
 }
 
 export const customerService = {
@@ -41,12 +27,10 @@ export const customerService = {
     return apiClient.get<CustomerResponse>(`/api/v1/customers/${id}`);
   },
 
-  getByUserId: async (userId: string) => {
-    return apiClient.get<CustomerResponse>(`/api/v1/customers/user/${userId}`);
-  },
-
   getByHospitalId: async (hospitalId: string) => {
-    return apiClient.get<CustomerResponse[]>(`/api/v1/customers/hospital/${hospitalId}`);
+    return apiClient.get<CustomerResponse[]>(
+      `${API_ENDPOINTS.CUSTOMERS || "/api/v1/customers"}/hospital/${hospitalId}`,
+    );
   },
 
   search: async (name: string, params?: { page?: number; size?: number }) => {
@@ -59,11 +43,11 @@ export const customerService = {
     );
   },
 
-  create: async (data: CustomerRequest) => {
+  create: async (data: any) => {
     return apiClient.post<CustomerResponse>(API_ENDPOINTS.CUSTOMERS || "/api/v1/customers", data);
   },
 
-  update: async (id: string, data: CustomerRequest) => {
+  update: async (id: string, data: any) => {
     return apiClient.put<CustomerResponse>(API_ENDPOINTS.CUSTOMER_BY_ID(id), data);
   },
 

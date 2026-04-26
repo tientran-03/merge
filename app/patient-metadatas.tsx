@@ -315,8 +315,10 @@ export default function PatientMetadatasScreen() {
     data = data.filter((m) => {
       const sid = String(m.specifyId || "").trim();
       if (!sid) return false;
-      // Default to false until we know
-      return paidBySpecify[sid] === true;
+      // Don't block initial render while payment status is still loading.
+      // If we haven't checked yet, keep the row visible and reconcile once known.
+      const paid = paidBySpecify[sid];
+      return paid !== false;
     });
     
     // Search filter
@@ -362,9 +364,9 @@ export default function PatientMetadatasScreen() {
         return;
       }
 
-      const next: Record<string, boolean> = {};
-      for (const sid of sids) {
-        try {
+      // Fetch in parallel to avoid long sequential waits.
+      const settled = await Promise.allSettled(
+        sids.map(async (sid) => {
           const ordRes = await orderService.getBySpecifyId(sid);
           if (ordRes.success && ordRes.data) {
             const raw = ordRes.data as unknown;
@@ -373,18 +375,31 @@ export default function PatientMetadatasScreen() {
               : Array.isArray((raw as { content?: unknown[] })?.content)
                 ? ((raw as { content: unknown[] }).content)
                 : [];
-            next[sid] = orders.some(
+            const paid = orders.some(
               (o: any) => String(o?.paymentStatus || "").toUpperCase() === "COMPLETED",
             );
-          } else {
-            next[sid] = false;
+            return [sid, paid] as const;
           }
-        } catch {
-          next[sid] = false;
+          return [sid, false] as const;
+        }),
+      );
+
+      const next: Record<string, boolean> = {};
+      for (const r of settled) {
+        if (r.status === "fulfilled") {
+          next[r.value[0]] = r.value[1];
+        } else {
+          // If we can't check payment status, don't hide rows by default.
+          // Mark as paid=true so the list still shows; backend/network can be flaky.
+          // We'll reconcile on next refresh.
+          const unknownSid = String((r as any)?.reason?.sid || "");
+          if (unknownSid) next[unknownSid] = true;
         }
       }
 
-      if (!cancelled) setPaidBySpecify(next);
+      if (!cancelled) {
+        setPaidBySpecify((prev) => ({ ...prev, ...next }));
+      }
     };
     run();
     return () => {

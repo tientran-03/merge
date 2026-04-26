@@ -17,7 +17,7 @@ export default function NotFoundScreen() {
             Trang bạn tìm kiếm không tồn tại hoặc đã bị thay đổi đường dẫn.
           </Text>
 
-          <Link href="/home" className="mt-4 w-full bg-cyan-600 rounded-xl py-3 px-3.5">
+          <Link href="/staff" className="mt-4 w-full bg-cyan-600 rounded-xl py-3 px-3.5">
             <View className="flex-row items-center justify-center gap-2">
               <Home size={18} color="#fff" />
               <Text className="text-white text-[15px] font-bold">Quay về trang chủ</Text>

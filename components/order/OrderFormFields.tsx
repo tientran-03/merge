@@ -135,7 +135,7 @@ export function OrderFormFields({
       <FormNumericInput
         name="paymentAmount"
         label="Số tiền thanh toán (VNĐ)"
-        type="currency"
+        type="integer"
         placeholder="Nhập số tiền"
       />
 

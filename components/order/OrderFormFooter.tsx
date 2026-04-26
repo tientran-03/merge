@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "@/constants/colors";
 
 interface OrderFormFooterProps {
@@ -49,11 +49,20 @@ export function OrderFormFooter({
         ].join(" ")}
         style={{
           backgroundColor: COLORS.primary,
-          shadowColor: COLORS.primary,
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.22,
-          shadowRadius: 10,
-          elevation: 6,
+          ...Platform.select({
+            ios: {
+              shadowColor: COLORS.primary,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.22,
+              shadowRadius: 10,
+            },
+            android: {
+              elevation: 6,
+            },
+            web: {
+              boxShadow: "0px 6px 10px rgba(0, 0, 0, 0.22)",
+            },
+          }),
         }}
       >
         {isPending ? (

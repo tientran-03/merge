@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface WizardStep {
   id: string;
@@ -28,9 +28,6 @@ interface UseWizardNavigationResult {
   progress: number;
 }
 
-/**
- * Hook for managing wizard/multi-step form navigation
- */
 export function useWizardNavigation({
   steps,
   initialStep = 0,
@@ -54,11 +51,10 @@ export function useWizardNavigation({
         onStepChange?.(step);
       }
     },
-    [totalSteps, onStepChange],
+    [totalSteps, onStepChange]
   );
 
   const goToNextStep = useCallback(() => {
-    // Validate current step if validation function is provided
     if (currentStepData.validate && !currentStepData.validate()) {
       return false;
     }
@@ -81,8 +77,6 @@ export function useWizardNavigation({
       onStepChange?.(prevStep);
     }
   }, [currentStep, isFirstStep, onPrevious, onStepChange]);
-
-  // Check if we can proceed to next step
   const canGoNext = !isLastStep && (!currentStepData.validate || currentStepData.validate());
 
   return {

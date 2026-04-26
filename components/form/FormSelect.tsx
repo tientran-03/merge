@@ -1,19 +1,22 @@
 import { ChevronDown, X, Search, Check } from "lucide-react-native";
 import React, { useState, useMemo } from "react";
 import { useFormContext, Controller, type FieldError } from "react-hook-form";
-import { View, Text, Modal, TouchableOpacity, ScrollView, TextInput } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { getFieldError } from "./error-utils";
+import { useSheetBottomInset } from "@/lib/useSheetBottomInset";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import type { FormSelectProps } from "./types";
-
-/** Tránh lệch kiểu (number vs string) khi so khớp value form với option */
-function optionValueMatches<T>(getValue: (o: T) => unknown, opt: T, fieldValue: unknown): boolean {
-  try {
-    return String(getValue(opt) ?? "").trim() === String(fieldValue ?? "").trim();
-  } catch {
-    return false;
-  }
-}
 
 export function FormSelect<T = any>({
   name,
@@ -29,20 +32,21 @@ export function FormSelect<T = any>({
   modalTitle = label || "Chọn giá trị",
   emptyMessage = "Không có dữ liệu",
   renderOption,
+  onValueChange,
+  validateOnChange,
   containerClassName = "",
   containerStyle,
 }: FormSelectProps<T>) {
-  const { control, formState: { errors } } = useFormContext();
-  const error = getFieldError(errors, name);
+  const { control, formState: { errors }, trigger } = useFormContext();
+  const sheetBottomInset = useSheetBottomInset();
+  const safeInsets = useSafeAreaInsets();
+  const error = errors[name];
 
   const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const hasError = !!error;
   const borderColor = hasError ? "border-red-400" : disabled ? "border-slate-100" : "border-slate-200";
-
-  // Ensure options is always an array and filter out any undefined/null items
-  // Also ensure getLabel and getValue are functions
   const safeOptions = useMemo(() => {
     if (!options || !Array.isArray(options)) return [];
     if (typeof getLabel !== 'function' || typeof getValue !== 'function') return [];
@@ -64,7 +68,10 @@ export function FormSelect<T = any>({
   }, [safeOptions, searchQuery, searchable, getLabel]);
 
   return (
-    <View className={`mb-4 ${containerClassName}`} style={containerStyle}>
+    <View
+      className={`mb-4 ${containerClassName}`}
+      style={[{ alignSelf: "stretch", width: "100%" }, containerStyle]}
+    >
       {label && (
         <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
           {label} {required ? <Text className="text-red-500">*</Text> : null}
@@ -75,20 +82,27 @@ export function FormSelect<T = any>({
         control={control}
         name={name}
         render={({ field: { onChange, value } }) => {
-          const valueStr = String(value ?? "").trim();
           let selectedLabel = placeholder;
-          if (valueStr) {
+          if (value !== undefined && value !== null && value !== '') {
             try {
-              const selected = safeOptions.find((opt) => opt != null && optionValueMatches(getValue, opt, value));
+              const selected = safeOptions.find(opt => {
+                if (!opt) return false;
+                try {
+                  return getValue(opt) === value;
+                } catch {
+                  return false;
+                }
+              });
               if (selected) {
                 try {
-                  selectedLabel = getLabel(selected) || placeholder;
+                  const lab = getLabel(selected);
+                  if (lab) selectedLabel = lab;
                 } catch {
-                  selectedLabel = placeholder;
+                  /* keep placeholder */
                 }
               }
             } catch {
-              selectedLabel = placeholder;
+              /* keep placeholder */
             }
           }
 
@@ -96,7 +110,16 @@ export function FormSelect<T = any>({
             if (!item) return;
             try {
               const itemValue = getValue(item);
-              onChange(itemValue);
+              const previousValue = value;
+              let proceed = true;
+              if (onValueChange) {
+                const r = onValueChange(itemValue, item, previousValue);
+                if (r === false) proceed = false;
+              }
+              if (proceed) {
+                onChange(itemValue);
+                if (validateOnChange) void trigger(name);
+              }
               setVisible(false);
               setSearchQuery("");
             } catch (error) {
@@ -116,7 +139,7 @@ export function FormSelect<T = any>({
           const isSelected = (item: T) => {
             if (!item) return false;
             try {
-              return optionValueMatches(getValue, item, value);
+              return getValue(item) === value;
             } catch {
               return false;
             }
@@ -127,11 +150,13 @@ export function FormSelect<T = any>({
               <TouchableOpacity
                 activeOpacity={disabled ? 1 : 0.75}
                 onPress={handleOpen}
-                className={`bg-white rounded-2xl border px-4 py-3.5 flex-row items-center justify-between ${borderColor}`}
+                className={`w-full bg-white rounded-2xl border px-4 py-3.5 flex-row items-center justify-between ${borderColor}`}
               >
                 <Text
-                  className={`flex-1 text-[14px] font-semibold ${
-                    !valueStr ? "text-slate-400" : "text-slate-900"
+                  className={`flex-1 min-w-0 text-[14px] font-semibold ${
+                    value === undefined || value === null || value === ''
+                      ? "text-slate-400"
+                      : "text-slate-900"
                   }`}
                   numberOfLines={1}
                 >
@@ -146,36 +171,57 @@ export function FormSelect<T = any>({
                 animationType="fade"
                 onRequestClose={handleClose}
               >
-                <View className="flex-1 bg-black/60 justify-end">
-                  <View className="bg-white rounded-t-3xl overflow-hidden">
-                    <View className="px-5 pt-4 pb-3 border-b border-slate-200 flex-row items-center justify-between">
-                      <Text className="text-[13px] font-extrabold text-slate-700">{modalTitle}</Text>
-                      <TouchableOpacity
-                        onPress={handleClose}
-                        className="w-10 h-10 rounded-2xl bg-slate-100 items-center justify-center"
-                        activeOpacity={0.8}
-                      >
-                        <X size={20} color="#334155" />
-                      </TouchableOpacity>
-                    </View>
-
-                    {searchable && (
-                      <View className="px-4 py-3 border-b border-slate-100">
-                        <View className="flex-row items-center bg-slate-100 rounded-xl px-3 py-2.5">
-                          <Search size={16} color="#64748B" />
-                          <TextInput
-                            className="flex-1 ml-2 text-[14px] text-slate-900"
-                            placeholder="Tìm kiếm..."
-                            placeholderTextColor="#94A3B8"
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                            autoCapitalize="none"
-                          />
-                        </View>
+                <KeyboardAvoidingView
+                  className="flex-1"
+                  behavior={Platform.OS === "ios" ? "padding" : "height"}
+                  keyboardVerticalOffset={Platform.OS === "ios" ? safeInsets.top : 0}
+                  style={{ flex: 1 }}
+                >
+                  <View className="flex-1 justify-end">
+                    <Pressable
+                      className="absolute inset-0 bg-black/60"
+                      onPress={handleClose}
+                      accessibilityRole="button"
+                      accessibilityLabel="Đóng"
+                    />
+                    <View
+                      className="bg-white rounded-t-3xl overflow-hidden w-full max-h-[92%]"
+                      style={{ paddingBottom: sheetBottomInset }}
+                    >
+                      <View className="px-5 pt-4 pb-3 border-b border-slate-200 flex-row items-center justify-between">
+                        <Text className="text-[13px] font-extrabold text-slate-700">{modalTitle}</Text>
+                        <TouchableOpacity
+                          onPress={handleClose}
+                          className="w-10 h-10 rounded-2xl bg-slate-100 items-center justify-center"
+                          activeOpacity={0.8}
+                        >
+                          <X size={20} color="#334155" />
+                        </TouchableOpacity>
                       </View>
-                    )}
 
-                    <ScrollView className="max-h-80">
+                      {searchable && (
+                        <View className="px-4 py-3 border-b border-slate-100">
+                          <View className="flex-row items-center bg-slate-100 rounded-xl px-3 py-2.5">
+                            <Search size={16} color="#64748B" />
+                            <TextInput
+                              className="flex-1 ml-2 text-[14px] text-slate-900"
+                              placeholder="Tìm kiếm..."
+                              placeholderTextColor="#94A3B8"
+                              value={searchQuery}
+                              onChangeText={setSearchQuery}
+                              autoCapitalize="none"
+                              returnKeyType="search"
+                            />
+                          </View>
+                        </View>
+                      )}
+
+                      <ScrollView
+                        className="max-h-80"
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
+                        nestedScrollEnabled
+                      >
                       {filteredOptions.length === 0 ? (
                         <View className="py-8 items-center">
                           <Text className="text-[13px] text-slate-400">{emptyMessage}</Text>
@@ -188,14 +234,23 @@ export function FormSelect<T = any>({
                           let uniqueKey: string | number;
                           try {
                             itemLabel = getLabel(item) || '';
-                            itemValue = getValue(item);
-                            // Always use uniqueKey from item if available, otherwise use index-based key
-                            uniqueKey = (item as any)?.uniqueKey || (item as any)?.serviceId || `option-${index}-${itemValue}` || `option-${index}`;
+                            const maybeValue = getValue(item);
+                            itemValue =
+                              typeof maybeValue === "string" || typeof maybeValue === "number"
+                                ? maybeValue
+                                : undefined;
+                            const rawKey =
+                              (item as any)?.uniqueKey ??
+                              (item as any)?.serviceId ??
+                              `option-${index}-${String(itemValue ?? "")}`;
+                            uniqueKey =
+                              typeof rawKey === "string" || typeof rawKey === "number"
+                                ? rawKey
+                                : `option-${index}`;
                           } catch {
                             return null;
                           }
                           const selected = isSelected(item);
-
                           if (renderOption) {
                             return (
                               <View key={uniqueKey}>
@@ -203,7 +258,6 @@ export function FormSelect<T = any>({
                               </View>
                             );
                           }
-
                           return (
                             <TouchableOpacity
                               key={uniqueKey}
@@ -225,15 +279,15 @@ export function FormSelect<T = any>({
                           );
                         })
                       )}
-                    </ScrollView>
+                      </ScrollView>
+                    </View>
                   </View>
-                </View>
+                </KeyboardAvoidingView>
               </Modal>
             </>
           );
         }}
       />
-
       {error && (
         <Text className="text-[11px] text-red-500 mt-1">
           {(error as FieldError)?.message?.toString() || "Giá trị không hợp lệ"}

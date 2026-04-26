@@ -14,7 +14,6 @@ export interface PatientResponse {
   patientContactPhone?: string;
   patientAddress?: string;
   hospitalId?: string;
-  // Legacy fields for backward compatibility
   name?: string;
   email?: string;
   phone?: string;
@@ -41,8 +40,16 @@ export const patientService = {
     return apiClient.get<PatientResponse>(API_ENDPOINTS.PATIENT_BY_PHONE(encodeURIComponent(phone)));
   },
 
+  getByEmail: async (email: string) => {
+    const trimmed = email.trim();
+    if (!trimmed) {
+      return { success: false as const, error: "Email trống" };
+    }
+    return apiClient.get<PatientResponse>(API_ENDPOINTS.PATIENT_BY_EMAIL(trimmed));
+  },
+
   getByHospitalId: async (hospitalId: string) => {
-    return apiClient.get<PatientResponse[]>(`${API_ENDPOINTS.PATIENTS}/hospital/${hospitalId}`);
+    return apiClient.get<PatientResponse[]>(API_ENDPOINTS.PATIENTS_BY_HOSPITAL(hospitalId));
   },
 
   search: async (name: string, params?: { page?: number; size?: number }) => {
@@ -65,5 +72,29 @@ export const patientService = {
 
   delete: async (id: string) => {
     return apiClient.delete(API_ENDPOINTS.PATIENT_BY_ID(id));
+  },
+  sendTestResultEmail: async (data: {
+    patientEmail: string;
+    patientName: string;
+    doctorName: string;
+    sampleName: string;
+    pdfFile?: { uri: string; name: string; type: string };
+    testResultUrl?: string;
+  }) => {
+    const formData = new FormData();
+    formData.append('patientEmail', data.patientEmail.trim());
+    formData.append('patientName', data.patientName.trim());
+    formData.append('doctorName', data.doctorName.trim());
+    formData.append('sampleName', data.sampleName.trim());
+    if (data.pdfFile) {
+      formData.append('pdfFile', data.pdfFile as never);
+    }
+    if (data.testResultUrl?.trim()) {
+      formData.append('testResultUrl', data.testResultUrl.trim());
+    }
+    return apiClient.postFormData<void>(
+      `${API_ENDPOINTS.PATIENTS}/send-test-result`,
+      formData
+    );
   },
 };

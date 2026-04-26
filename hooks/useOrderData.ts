@@ -1,15 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { barcodeService, BarcodeResponse } from '@/services/barcodeService';
-import { customerService, CustomerResponse } from '@/services/customerService';
-import { doctorService, DoctorResponse } from '@/services/doctorService';
-import {
-  hospitalStaffService,
-  HospitalStaffResponse,
-} from '@/services/hospitalStaffService';
-import { orderService, OrderResponse } from '@/services/orderService';
-import { collectUsedBarcodeStringsFromOrders } from '@/utils/order-barcode';
+import { BarcodeResponse, barcodeService } from '@/services/barcodeService';
+import { CustomerResponse, customerService } from '@/services/customerService';
+import { DoctorResponse, doctorService } from '@/services/doctorService';
+import { HospitalStaffResponse, hospitalStaffService } from '@/services/hospitalStaffService';
+import { OrderResponse, orderService } from '@/services/orderService';
 
 interface UseOrderDataResult {
   customers: CustomerResponse[];
@@ -20,10 +16,6 @@ interface UseOrderDataResult {
   isLoading: boolean;
 }
 
-/**
- * Hook for fetching all data needed for order forms
- * Returns customers, doctors, staffs, barcodes, and computed barcode options
- */
 export function useOrderData(): UseOrderDataResult {
   const { data: customersResponse } = useQuery({
     queryKey: ['customers'],
@@ -56,39 +48,35 @@ export function useOrderData(): UseOrderDataResult {
   });
 
   const customers = (customersResponse as any)?.success
-    ? ((customersResponse as any).data as CustomerResponse[]) ?? []
+    ? (((customersResponse as any).data as CustomerResponse[]) ?? [])
     : [];
 
   const doctors = (doctorsResponse as any)?.success
-    ? ((doctorsResponse as any).data as DoctorResponse[]) ?? []
+    ? (((doctorsResponse as any).data as DoctorResponse[]) ?? [])
     : [];
 
   const staffs = (staffResponse as any)?.success
-    ? ((staffResponse as any).data as HospitalStaffResponse[]) ?? []
+    ? (((staffResponse as any).data as HospitalStaffResponse[]) ?? [])
     : [];
 
   const barcodes = (barcodesResponse as any)?.success
-    ? ((barcodesResponse as any).data as BarcodeResponse[]) ?? []
+    ? (((barcodesResponse as any).data as BarcodeResponse[]) ?? [])
     : [];
 
-  // Compute barcode options (excluding already used ones)
   const barcodeOptions = useMemo(() => {
-    let orders: unknown[] = [];
+    const used = new Set<string>();
+
     if ((ordersResponse as any)?.success && (ordersResponse as any).data) {
-      const raw = (ordersResponse as any).data as unknown;
-      // Endpoint may return array OR page-like shape { content: [...] }
-      if (Array.isArray(raw)) {
-        orders = raw;
-      } else if (raw && typeof raw === 'object' && Array.isArray((raw as any).content)) {
-        orders = (raw as any).content as unknown[];
-      }
+      const orders = (ordersResponse as any).data as OrderResponse[];
+      orders.forEach(o => {
+        if (o.barcodeId != null && o.barcodeId.trim()) {
+          used.add(String(o.barcodeId).trim());
+        }
+      });
     }
 
-    // Robust: handle both `barcodeId` and nested `barcode.barcode`
-    const used = collectUsedBarcodeStringsFromOrders(orders);
-
     const normalized = (barcodes as BarcodeResponse[])
-      .map((b) => {
+      .map(b => {
         const barcodeString = b?.barcode?.trim() || '';
         if (!barcodeString) return null;
 
@@ -98,16 +86,13 @@ export function useOrderData(): UseOrderDataResult {
           raw: b,
         };
       })
-      .filter(
-        (x): x is { value: string; label: string; raw: BarcodeResponse } => x !== null,
-      )
-      .filter((x) => !used.has(x.value));
+      .filter((x): x is { value: string; label: string; raw: BarcodeResponse } => x !== null)
+      .filter(x => !used.has(x.value));
 
     return normalized;
   }, [barcodes, ordersResponse]);
 
-  const isLoading =
-    !customersResponse || !doctorsResponse || !staffResponse || !barcodesResponse;
+  const isLoading = !customersResponse || !doctorsResponse || !staffResponse || !barcodesResponse;
 
   return {
     customers,

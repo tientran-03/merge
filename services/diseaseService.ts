@@ -37,6 +37,10 @@ export const diseaseService = {
     return apiClient.post<DiseaseServiceResponse>(API_ENDPOINTS.DISEASE_SERVICES, data);
   },
 
+  update: async (id: string, data: DiseaseServiceRequest) => {
+    return apiClient.put<DiseaseServiceResponse>(`${API_ENDPOINTS.DISEASE_SERVICES}/${id}`, data);
+  },
+
   getById: async (id: string) => {
     return apiClient.get<DiseaseServiceResponse>(`${API_ENDPOINTS.DISEASE_SERVICES}/${id}`);
   },
@@ -45,7 +49,11 @@ export const diseaseService = {
     return apiClient.get<DiseaseServiceResponse[]>(API_ENDPOINTS.DISEASE_SERVICES);
   },
 
-  update: async (id: string, data: DiseaseServiceRequest) => {
-    return apiClient.put<DiseaseServiceResponse>(`${API_ENDPOINTS.DISEASE_SERVICES}/${id}`, data);
+  getByPatientId: async (patientId: string) => {
+    return apiClient.get<DiseaseServiceResponse[]>(`${API_ENDPOINTS.DISEASE_SERVICES}/patient/${patientId}`);
+  },
+
+  getByServiceId: async (serviceId: string) => {
+    return apiClient.get<DiseaseServiceResponse[]>(`${API_ENDPOINTS.DISEASE_SERVICES}/service/${serviceId}`);
   },
 };

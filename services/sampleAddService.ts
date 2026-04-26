@@ -2,7 +2,6 @@ import { apiClient } from "./api";
 import { API_ENDPOINTS } from "@/config/api";
 
 export interface SampleAddResponse {
-  /** Backend trả `id`; mobile có thể map thêm `sampleAddId` */
   id?: string;
   sampleAddId?: string;
   sampleName: string;
@@ -12,12 +11,13 @@ export interface SampleAddResponse {
   orderCode?: string;
   patientId?: string;
   patientName?: string;
-  status?: string;
+  status: string;
+  requestDate?: string;
   paymentStatus?: string;
   paymentType?: string;
+  customerFastq?: boolean;
   note?: string;
   invoiceLink?: string;
-  requestDate?: string;
 }
 
 export const sampleAddService = {
@@ -48,26 +48,31 @@ export const sampleAddService = {
 
   updateStatus: async (id: string, status: string) => {
     return apiClient.patch(
-      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/status?status=${encodeURIComponent(status)}`
+      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/status?status=${status}`
     );
   },
 
   updatePaymentType: async (id: string, paymentType: string) => {
-    return apiClient.patch(
-      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/payment-type?paymentType=${encodeURIComponent(paymentType)}`
-    );
+    const q = encodeURIComponent(paymentType);
+    return apiClient.patch(`${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/payment-type?paymentType=${q}`);
   },
 
   updatePaymentStatus: async (id: string, paymentStatus: string) => {
+    const q = encodeURIComponent(paymentStatus);
     return apiClient.patch(
-      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/payment-status?paymentStatus=${encodeURIComponent(paymentStatus)}`
+      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/payment-status?paymentStatus=${q}`
+    );
+  },
+
+  updateCustomerFastq: async (id: string, customerFastq: boolean) => {
+    return apiClient.patch(
+      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/customer-fastq?customerFastq=${customerFastq}`
     );
   },
 
   updateInvoiceLink: async (id: string, invoiceLink: string) => {
-    return apiClient.patch(
-      `${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/invoice-link?invoiceLink=${encodeURIComponent(invoiceLink)}`
-    );
+    const q = encodeURIComponent(invoiceLink);
+    return apiClient.patch(`${API_ENDPOINTS.SAMPLE_ADD_BY_ID(id)}/invoice-link?invoiceLink=${q}`);
   },
 
   delete: async (id: string) => {

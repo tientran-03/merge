@@ -1,126 +1,122 @@
-import { API_ENDPOINTS } from "@/config/api";
-import { apiClient } from "./api";
+import { API_ENDPOINTS } from '@/config/api';
+
+import { apiClient } from './api';
 
 export interface MonthlyRevenueResponse {
   month: number;
-  year?: number;
+  year: number;
   totalRevenue: number;
   orderCount: number;
 }
 
-/** Khớp backend + admin web (pie trạng thái đơn) */
 export interface OrderStatusCountResponse {
-  completedCount?: number;
-  rejectedCount?: number;
-  pendingCount?: number;
-  totalCount?: number;
+  completedCount: number;
+  rejectedCount: number;
+  pendingCount: number;
+  totalCount: number;
 }
 
 export interface RevenueStatisticsResponse {
-  year?: number;
-  monthlyRevenue?: MonthlyRevenueResponse[];
-  monthlyRevenues?: MonthlyRevenueResponse[];
-  totalYearRevenue?: number;
-  totalRevenue?: number;
-  totalYearOrders?: number;
-  totalOrders?: number;
-  orderStatusCount?: OrderStatusCountResponse;
-  orderStatusCounts?: { status: string; count: number }[];
-  availableYears?: number[];
+  year: number;
+  totalYearRevenue: number;
+  totalYearOrders: number;
+  monthlyRevenue: MonthlyRevenueResponse[];
+  orderStatusCount: OrderStatusCountResponse;
+  availableYears: number[];
 }
 
 export interface PaymentHistoryResponse {
-  paymentId?: string;
-  transactionId?: string | null;
-  transactionDate?: string | null;
-  amountIn?: number | null;
-  paymentStatus?: string | null;
-  paymentType?: string | null;
-  bankBrandName?: string | null;
-  orderId?: string | null;
-  orderName?: string | null;
-  hospitalName?: string | null;
-  serviceName?: string | null;
-  genomeTestName?: string | null;
+  paymentId: string;
+  transactionId: string | null;
+  transactionDate: string | null;
+  amountIn: number | null;
+  paymentStatus: string | null;
+  paymentType: string | null;
+  bankBrandName: string | null;
+  orderId: string | null;
+  orderName: string | null;
+  hospitalName: string | null;
+  serviceName: string | null;
+  genomeTestName: string | null;
 }
 
 export interface ServiceOrderCountResponse {
-  serviceId?: string;
+  serviceId: string;
   serviceName: string;
   orderCount: number;
 }
 
 export interface ServiceRevenueResponse {
-  serviceId?: string;
+  serviceId: string;
   serviceName: string;
   totalRevenue: number;
-  orderCount?: number;
+  orderCount: number;
 }
 
 export interface HospitalServiceUsageResponse {
-  serviceId?: string;
+  serviceId: string;
   serviceName: string;
-  hospitalId?: string;
+  hospitalId: string;
   hospitalName: string;
   usageCount: number;
 }
 
 export interface GenomeTestByHospitalResponse {
-  testId?: string;
+  testId: string;
   testName: string;
-  hospitalId?: string;
+  hospitalId: string;
   hospitalName: string;
   testCount: number;
 }
 
 export interface SampleAddStatisticsResponse {
-  totalSampleAdds?: number;
-  forwardAnalysisCount?: number;
-  acceptedCount?: number;
-  rejectedCount?: number;
-  initiationCount?: number;
+  totalSampleAdds: number;
+  forwardAnalysisCount: number;
+  acceptedCount: number;
+  rejectedCount: number;
+  initiationCount: number;
 }
 
 export interface SampleAddRevenueResponse {
-  sampleName?: string;
-  price?: number;
-  finalPrice?: number;
-  orderCount?: number;
+  sampleName: string;
+  price: number;
+  finalPrice: number;
+  orderCount: number;
   totalRevenue: number;
 }
 
 export interface ServiceStatisticsResponse {
   serviceOrderCounts: ServiceOrderCountResponse[];
   serviceRevenues: ServiceRevenueResponse[];
-  hospitalServiceUsages?: HospitalServiceUsageResponse[];
-  genomeTestByHospitals?: GenomeTestByHospitalResponse[];
-  sampleAddStatistics?: SampleAddStatisticsResponse;
-  sampleAddRevenues?: SampleAddRevenueResponse[];
+  hospitalServiceUsages: HospitalServiceUsageResponse[];
+  genomeTestByHospitals: GenomeTestByHospitalResponse[];
+  sampleAddStatistics: SampleAddStatisticsResponse;
+  sampleAddRevenues: SampleAddRevenueResponse[];
 }
 
 export interface TopHospitalRevenueResponse {
   hospitalId: string;
   hospitalName: string;
-  serviceRevenue?: number;
-  sampleAddRevenue?: number;
+  serviceRevenue: number;
+  sampleAddRevenue: number;
   totalRevenue: number;
   orderCount: number;
-  sampleAddCount?: number;
-  rank?: number;
+  sampleAddCount: number;
+  rank: number;
 }
 
 export interface HospitalPaymentSummaryResponse {
   hospitalId: string;
   hospitalName: string;
-  serviceUsageCount?: number;
-  serviceRevenue?: number;
-  sampleAddRevenue?: number;
+  serviceUsageCount: number;
+  serviceRevenue: number;
+  sampleAddRevenue: number;
   totalRevenue: number;
-  sampleAddCount?: number;
-  mostUsedServiceId?: string | null;
-  mostUsedServiceName?: string | null;
-  mostUsedGenomeTestId?: string | null;
-  mostUsedGenomeTestName?: string | null;
+  sampleAddCount: number;
+  mostUsedServiceId: string | null;
+  mostUsedServiceName: string | null;
+  mostUsedGenomeTestId: string | null;
+  mostUsedGenomeTestName: string | null;
 }
 
 export interface HospitalStatisticsResponse {
@@ -128,37 +124,38 @@ export interface HospitalStatisticsResponse {
   hospitalPaymentSummaries: HospitalPaymentSummaryResponse[];
 }
 
+function withQuery(
+  base: string,
+  params: Record<string, string | number | undefined | null>
+): string {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return;
+    search.append(k, String(v));
+  });
+  const q = search.toString();
+  return q ? `${base}?${q}` : base;
+}
+
 export const statisticsService = {
-  getRevenueStatistics: async (year?: number) => {
-    const url = year
-      ? `${API_ENDPOINTS.STATISTICS_REVENUE}?year=${year}`
-      : API_ENDPOINTS.STATISTICS_REVENUE;
+  getRevenueStatistics: (year?: number) => {
+    const url = withQuery(API_ENDPOINTS.STATISTICS_REVENUE, { year });
     return apiClient.get<RevenueStatisticsResponse>(url);
   },
 
-  getPaymentHistory: async (params?: {
-    year?: number;
-    month?: number;
-    page?: number;
-    size?: number;
-  }) => {
-    const queryParams = new URLSearchParams();
-    if (params?.year !== undefined) queryParams.append("year", params.year.toString());
-    if (params?.month !== undefined) queryParams.append("month", params.month.toString());
-    if (params?.page !== undefined) queryParams.append("page", params.page.toString());
-    if (params?.size !== undefined) queryParams.append("size", params.size.toString());
-
-    const url = queryParams.toString()
-      ? `${API_ENDPOINTS.STATISTICS_PAYMENT_HISTORY}?${queryParams.toString()}`
-      : API_ENDPOINTS.STATISTICS_PAYMENT_HISTORY;
+  getPaymentHistory: (params?: { year?: number; month?: number; page?: number; size?: number }) => {
+    const url = withQuery(API_ENDPOINTS.STATISTICS_PAYMENT_HISTORY, {
+      year: params?.year,
+      month: params?.month,
+      page: params?.page,
+      size: params?.size,
+    });
     return apiClient.get<PaymentHistoryResponse[]>(url);
   },
 
-  getServiceStatistics: async () => {
-    return apiClient.get<ServiceStatisticsResponse>(API_ENDPOINTS.STATISTICS_SERVICES);
-  },
+  getServiceStatistics: () =>
+    apiClient.get<ServiceStatisticsResponse>(API_ENDPOINTS.STATISTICS_SERVICES),
 
-  getHospitalStatistics: async () => {
-    return apiClient.get<HospitalStatisticsResponse>(API_ENDPOINTS.STATISTICS_HOSPITALS);
-  },
+  getHospitalStatistics: () =>
+    apiClient.get<HospitalStatisticsResponse>(API_ENDPOINTS.STATISTICS_HOSPITALS),
 };

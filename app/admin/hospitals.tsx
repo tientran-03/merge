@@ -662,7 +662,7 @@ function DetailModalContent({
   const hospitalId = hospital?.hospitalId ? String(hospital.hospitalId) : null;
 
   // Fetch doctors - return plain array
-  const { data: doctorsData, isLoading: doctorsLoading } = useQuery<DoctorResponse[]>({
+  const { data: doctorsResponse, isLoading: doctorsLoading } = useQuery({
     queryKey: ["hospital-doctors", hospitalId],
     queryFn: () => doctorService.getByHospitalId(hospitalId!),
     enabled: type === "doctors" && !!hospitalId,
@@ -690,7 +690,9 @@ function DetailModalContent({
   });
 
   // Doctors array from query (ensure always an array)
-  const doctors: DoctorResponse[] = Array.isArray(doctorsData) ? doctorsData : [];
+  const doctors: DoctorResponse[] = doctorsResponse?.success
+    ? (doctorsResponse.data || [])
+    : [];
   const staff = staffResponse?.success ? (staffResponse.data || []) : [];
   const patients: PatientResponse[] = patientsResponse?.success ? patientsResponse.data || [] : [];
   const customers: CustomerResponse[] = customersResponse?.success ? customersResponse.data || [] : [];

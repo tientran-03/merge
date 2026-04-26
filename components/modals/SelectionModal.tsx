@@ -1,6 +1,8 @@
-import { Check, Search, Trash2, X } from "lucide-react-native";
-import React, { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Check, Search, Trash2, X } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+
+import { useSheetBottomInset } from '@/lib/useSheetBottomInset';
 
 export interface SelectionOption {
   value: string;
@@ -25,19 +27,20 @@ export function SelectionModal({
   selectedValue,
   onSelect,
   onClose,
-  placeholderSearch = "Tìm kiếm...",
+  placeholderSearch = 'Tìm kiếm...',
   onClear,
 }: SelectionModalProps) {
-  const [q, setQ] = useState("");
+  const sheetBottomInset = useSheetBottomInset();
+  const [q, setQ] = useState('');
 
   useEffect(() => {
-    if (visible) setQ("");
+    if (visible) setQ('');
   }, [visible]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     if (!query) return options;
-    return options.filter((x) => x.label.toLowerCase().includes(query));
+    return options.filter(x => x.label.toLowerCase().includes(query));
   }, [q, options]);
 
   return (
@@ -50,7 +53,10 @@ export function SelectionModal({
     >
       <View className="flex-1 justify-end bg-black/50">
         <Pressable className="absolute inset-0" onPress={onClose} />
-        <View className="max-h-[82%] rounded-t-3xl bg-white shadow-2xl" style={{ zIndex: 9999 }}>
+        <View
+          className="max-h-[82%] rounded-t-3xl bg-white shadow-2xl"
+          style={{ zIndex: 9999, paddingBottom: sheetBottomInset }}
+        >
           <View className="items-center pt-3">
             <View className="h-1.5 w-12 rounded-full bg-slate-200" />
           </View>
@@ -96,7 +102,7 @@ export function SelectionModal({
               />
               {!!q && (
                 <Pressable
-                  onPress={() => setQ("")}
+                  onPress={() => setQ('')}
                   hitSlop={10}
                   className="ml-2 h-8 w-8 items-center justify-center rounded-full bg-white"
                 >
@@ -112,7 +118,7 @@ export function SelectionModal({
                 <Text className="mt-1 text-[13px] text-slate-500">Thử từ khóa khác nhé.</Text>
               </View>
             ) : (
-              filtered.map((item) => {
+              filtered.map(item => {
                 const isSelected = item.value === selectedValue;
 
                 return (
@@ -123,15 +129,15 @@ export function SelectionModal({
                       onClose();
                     }}
                     className={[
-                      "mb-2 flex-row items-center justify-between rounded-2xl px-4 py-3",
-                      isSelected ? "bg-indigo-600/10" : "bg-white",
-                    ].join(" ")}
+                      'mb-2 flex-row items-center justify-between rounded-2xl px-4 py-3',
+                      isSelected ? 'bg-indigo-600/10' : 'bg-white',
+                    ].join(' ')}
                   >
                     <Text
                       className={[
-                        "flex-1 text-[15px]",
-                        isSelected ? "font-bold text-indigo-700" : "text-slate-900",
-                      ].join(" ")}
+                        'flex-1 text-[15px]',
+                        isSelected ? 'font-bold text-indigo-700' : 'text-slate-900',
+                      ].join(' ')}
                       numberOfLines={2}
                     >
                       {item.label}

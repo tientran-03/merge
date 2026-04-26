@@ -1,8 +1,13 @@
-import { API_ENDPOINTS } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/api';
 
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
 export interface ServiceResponse {
+  serviceId: string;
+  name: string;
+}
+
+export interface ServiceEntityRequestBody {
   serviceId: string;
   name: string;
 }
@@ -10,8 +15,8 @@ export interface ServiceResponse {
 export const serviceService = {
   getAll: async (params?: { page?: number; size?: number }) => {
     const queryParams = new URLSearchParams();
-    if (params?.page !== undefined) queryParams.append("page", params.page.toString());
-    if (params?.size) queryParams.append("size", params.size.toString());
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+    if (params?.size) queryParams.append('size', params.size.toString());
     const url = queryParams.toString()
       ? `${API_ENDPOINTS.SERVICES}?${queryParams.toString()}`
       : API_ENDPOINTS.SERVICES;
@@ -22,11 +27,11 @@ export const serviceService = {
     return apiClient.get<ServiceResponse>(API_ENDPOINTS.SERVICE_BY_ID(id));
   },
 
-  create: async (data: any) => {
+  create: async (data: ServiceEntityRequestBody) => {
     return apiClient.post<ServiceResponse>(API_ENDPOINTS.SERVICES, data);
   },
 
-  update: async (id: string, data: any) => {
+  update: async (id: string, data: ServiceEntityRequestBody) => {
     return apiClient.put<ServiceResponse>(API_ENDPOINTS.SERVICE_BY_ID(id), data);
   },
 

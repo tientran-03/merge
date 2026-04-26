@@ -6,7 +6,7 @@ export interface EmbryoServiceRequest {
   serviceId: string;
   patientId: string;
   biospy?: string;
-  biospyDate?: string; // ISO date string
+  biospyDate?: string; 
   cellContainingSolution?: string;
   embryoCreate?: number;
   embryoStatus?: string;
@@ -37,6 +37,10 @@ export const embryoService = {
     return apiClient.post<EmbryoServiceResponse>(API_ENDPOINTS.EMBRYO_SERVICES, data);
   },
 
+  update: async (id: string, data: EmbryoServiceRequest) => {
+    return apiClient.put<EmbryoServiceResponse>(`${API_ENDPOINTS.EMBRYO_SERVICES}/${id}`, data);
+  },
+
   getById: async (id: string) => {
     return apiClient.get<EmbryoServiceResponse>(`${API_ENDPOINTS.EMBRYO_SERVICES}/${id}`);
   },
@@ -45,7 +49,11 @@ export const embryoService = {
     return apiClient.get<EmbryoServiceResponse[]>(API_ENDPOINTS.EMBRYO_SERVICES);
   },
 
-  update: async (id: string, data: EmbryoServiceRequest) => {
-    return apiClient.put<EmbryoServiceResponse>(`${API_ENDPOINTS.EMBRYO_SERVICES}/${id}`, data);
+  getByPatientId: async (patientId: string) => {
+    return apiClient.get<EmbryoServiceResponse[]>(`${API_ENDPOINTS.EMBRYO_SERVICES}/patient/${patientId}`);
+  },
+
+  getByServiceId: async (serviceId: string) => {
+    return apiClient.get<EmbryoServiceResponse[]>(`${API_ENDPOINTS.EMBRYO_SERVICES}/service/${serviceId}`);
   },
 };

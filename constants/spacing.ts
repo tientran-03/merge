@@ -1,7 +1,3 @@
-/**
- * Shared spacing constants for the application
- */
-
 export const SPACING = {
   xs: 4,
   sm: 8,

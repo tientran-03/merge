@@ -1,16 +1,13 @@
-/**
- * Htgen pipeline API (phân tích gen) — cùng base với web `analyze-modal`.
- * Gọi trực tiếp https://api.htgen.io.vn/api/pipeline (không qua Java backend app).
- */
-const PIPELINE_API_BASE = "https://api.htgen.io.vn/api/pipeline";
 
-export type PipelineInfo = {
+const PIPELINE_API_URL = 'https://api.htgen.io.vn/api/pipeline';
+
+export interface PipelineInfo {
   name: string;
   label: string;
-  description: string;
-};
+  description?: string;
+}
 
-export type QueueStats = {
+export interface QueueStats {
   queue: string;
   pipeline: string;
   waiting: number;
@@ -19,67 +16,60 @@ export type QueueStats = {
   failed: number;
   delayed: number;
   total: number;
-};
+}
 
-export type AnalyzeJobBody = {
+export interface AnalyzeJobRequest {
   patientId: string;
   patientName: string;
   sampleName: string;
   hospitalName: string;
   labcode: string;
-  priority: number;
+  priority?: number;
   hpoIds?: string[];
-};
-
-export type AnalyzeJobResponse = { jobId?: string; error?: string };
-
-async function parseJsonSafe(res: Response): Promise<Record<string, unknown>> {
-  const t = await res.text();
-  try {
-    return t ? (JSON.parse(t) as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
 }
 
 export const pipelineService = {
   listPipelines: async (): Promise<PipelineInfo[]> => {
-    const res = await fetch(`${PIPELINE_API_BASE}/list`);
+    const res = await fetch(`${PIPELINE_API_URL}/list`);
     if (!res.ok) return [];
-    const data = await parseJsonSafe(res);
-    const raw = data.pipelines;
-    return Array.isArray(raw) ? (raw as PipelineInfo[]) : [];
+    const data = await res.json();
+    return data.pipelines || [];
   },
 
-  getQueueStats: async (pipelineName: string): Promise<QueueStats | null> => {
-    const res = await fetch(
-      `${PIPELINE_API_BASE}/${encodeURIComponent(pipelineName)}/queue/stats`,
-    );
+  getQueueStats: async (pipeline: string): Promise<QueueStats | null> => {
+    const res = await fetch(`${PIPELINE_API_URL}/${pipeline}/queue/stats`);
     if (!res.ok) return null;
-    return (await res.json()) as QueueStats;
+    return res.json();
   },
 
-  submitAnalyze: async (
-    pipelineName: string,
-    body: AnalyzeJobBody,
-  ): Promise<{ ok: true; jobId: string } | { ok: false; error: string }> => {
-    const res = await fetch(`${PIPELINE_API_BASE}/${encodeURIComponent(pipelineName)}/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+  analyze: async (
+    pipeline: string,
+    body: AnalyzeJobRequest
+  ): Promise<{ jobId?: string; error?: string }> => {
+    const res = await fetch(`${PIPELINE_API_URL}/${pipeline}/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...body,
+        priority: body.priority ?? 2,
+      }),
     });
-    const data = await parseJsonSafe(res);
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = data.error;
-      return {
-        ok: false,
-        error: typeof err === "string" ? err : `HTTP ${res.status}`,
-      };
+      return { error: data.error || `HTTP ${res.status}` };
     }
-    const jobId = data.jobId;
-    return {
-      ok: true,
-      jobId: typeof jobId === "string" ? jobId : String(jobId ?? ""),
-    };
+    return { jobId: data.jobId };
+  },
+
+  /**
+   * Backward-compatible name used by older UI.
+   * Prefer `analyze()` for new code.
+   */
+  submitAnalyze: async (
+    pipeline: string,
+    body: AnalyzeJobRequest
+  ): Promise<{ ok: boolean; jobId?: string; error?: string }> => {
+    const r = await pipelineService.analyze(pipeline, body);
+    return r.jobId ? { ok: true, jobId: r.jobId } : { ok: false, error: r.error || 'Không gửi được job' };
   },
 };

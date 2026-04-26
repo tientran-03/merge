@@ -1,6 +1,6 @@
 import { Edit, Trash2 } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { COLORS } from '@/constants/colors';
 import { ConfirmModal } from '@/components/modals';
@@ -27,24 +27,48 @@ export function OrderDetailActions({
 
   return (
     <>
-      <View style={styles.container}>
+      <View
+        className="flex-row gap-3 px-4 py-3 border-t"
+        style={{
+          backgroundColor: COLORS.card,
+          borderTopColor: COLORS.border,
+        }}
+      >
         <TouchableOpacity
-          style={[styles.button, styles.editButton]}
+          className="flex-1 flex-row items-center justify-center py-3 rounded-xl gap-2 border"
+          style={{
+            backgroundColor: COLORS.primarySoft,
+            borderColor: COLORS.primary,
+          }}
           onPress={onEdit}
           activeOpacity={0.8}
         >
           <Edit size={18} color={COLORS.primary} />
-          <Text style={styles.editButtonText}>Chỉnh sửa</Text>
+          <Text
+            className="text-[15px] font-bold"
+            style={{ color: COLORS.primary }}
+          >
+            Chỉnh sửa
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
+          className="flex-1 flex-row items-center justify-center py-3 rounded-xl gap-2 border"
+          style={{
+            backgroundColor: `${COLORS.danger}15`,
+            borderColor: COLORS.danger,
+          }}
           onPress={() => setShowDeleteModal(true)}
           disabled={deleteLoading}
           activeOpacity={0.8}
         >
           <Trash2 size={18} color={COLORS.danger} />
-          <Text style={styles.deleteButtonText}>Xóa đơn</Text>
+          <Text
+            className="text-[15px] font-bold"
+            style={{ color: COLORS.danger }}
+          >
+            Xóa đơn
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -61,44 +85,3 @@ export function OrderDetailActions({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: COLORS.card,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  button: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 8,
-  },
-  editButton: {
-    backgroundColor: COLORS.primarySoft,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  editButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  deleteButton: {
-    backgroundColor: `${COLORS.danger}15`,
-    borderWidth: 1,
-    borderColor: COLORS.danger,
-  },
-  deleteButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: COLORS.danger,
-  },
-});

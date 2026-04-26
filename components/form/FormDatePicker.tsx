@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useFormContext, Controller, type FieldError } from "react-hook-form";
 import { View, Text, Modal, TouchableOpacity, ScrollView } from "react-native";
 
-import { getFieldError } from "./error-utils";
+import { useSheetBottomInset } from "@/lib/useSheetBottomInset";
+
 import type { FormDatePickerProps } from "./types";
 
 const formatDate = (date: Date): string => {
@@ -43,11 +44,13 @@ export function FormDatePicker({
   disabled = false,
   minimumDate,
   maximumDate,
+  validateOnChange,
   containerClassName = "",
   containerStyle,
 }: FormDatePickerProps) {
-  const { control, formState: { errors } } = useFormContext();
-  const error = getFieldError(errors, name);
+  const { control, formState: { errors }, trigger } = useFormContext();
+  const sheetBottomInset = useSheetBottomInset();
+  const error = errors[name];
 
   const [visible, setVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -100,6 +103,7 @@ export function FormDatePicker({
           const handleSelectDate = (date: Date) => {
             setSelectedDate(date);
             onChange(date.toISOString());
+            if (validateOnChange) void trigger(name);
             handleClose();
           };
 
@@ -276,7 +280,10 @@ export function FormDatePicker({
 
               <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
                 <View className="flex-1 bg-black/60 justify-end">
-                  <View className="bg-white rounded-t-3xl overflow-hidden">
+                  <View
+                    className="bg-white rounded-t-3xl overflow-hidden"
+                    style={{ paddingBottom: sheetBottomInset }}
+                  >
                     <View className="px-5 pt-4 pb-3 border-b border-slate-200 flex-row items-center justify-between">
                       <Text className="text-[13px] font-extrabold text-slate-700">Chọn ngày</Text>
                       <TouchableOpacity

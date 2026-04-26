@@ -1,11 +1,10 @@
-import { API_ENDPOINTS } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/api';
 
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
 export interface PatientClinicalResponse {
-  patientClinicalId?: string;
-  /** Một số endpoint backend trả về `id` thay cho `patientClinicalId`. */
   id?: string;
+  patientClinicalId?: string;
   patientId: string;
   familyHistory?: string;
   patientHistory?: string;
@@ -41,7 +40,9 @@ export const patientClinicalService = {
   },
 
   getByPatientId: async (patientId: string) => {
-    return apiClient.get<PatientClinicalResponse>(API_ENDPOINTS.PATIENT_CLINICAL_BY_PATIENT_ID(patientId));
+    return apiClient.get<PatientClinicalResponse>(
+      API_ENDPOINTS.PATIENT_CLINICAL_BY_PATIENT_ID(patientId)
+    );
   },
 
   existsByPatientId: async (patientId: string) => {
@@ -61,10 +62,15 @@ export const patientClinicalService = {
   },
 
   addMedical: async (id: string, medical: string) => {
-    return apiClient.post<PatientClinicalResponse>(`${API_ENDPOINTS.PATIENT_CLINICAL_BY_ID(id)}/medicals?medical=${encodeURIComponent(medical)}`, {});
+    return apiClient.post<PatientClinicalResponse>(
+      `${API_ENDPOINTS.PATIENT_CLINICAL_BY_ID(id)}/medicals?medical=${encodeURIComponent(medical)}`,
+      {}
+    );
   },
 
   removeMedical: async (id: string, medical: string) => {
-    return apiClient.delete<PatientClinicalResponse>(`${API_ENDPOINTS.PATIENT_CLINICAL_BY_ID(id)}/medicals?medical=${encodeURIComponent(medical)}`);
+    return apiClient.delete<PatientClinicalResponse>(
+      `${API_ENDPOINTS.PATIENT_CLINICAL_BY_ID(id)}/medicals?medical=${encodeURIComponent(medical)}`
+    );
   },
 };

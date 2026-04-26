@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { COLORS } from '@/constants/colors';
 
@@ -11,43 +11,34 @@ interface OrderDetailHeaderProps {
 
 export function OrderDetailHeader({ orderId, onBack }: OrderDetailHeaderProps) {
   return (
-    <View style={styles.header}>
-      <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+    <View
+      className="flex-row items-center px-4 py-3 border-b"
+      style={{
+        backgroundColor: COLORS.card,
+        borderBottomColor: COLORS.border,
+      }}
+    >
+      <TouchableOpacity className="p-2 mr-3" onPress={onBack} activeOpacity={0.8}>
         <ArrowLeft size={24} color={COLORS.text} />
       </TouchableOpacity>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Chi tiết đơn hàng</Text>
-        {orderId && <Text style={styles.subtitle}>#{orderId}</Text>}
+
+      <View className="flex-1">
+        <Text
+          className="text-[18px] font-bold"
+          style={{ color: COLORS.text }}
+        >
+          Chi tiết đơn hàng
+        </Text>
+
+        {orderId && (
+          <Text
+            className="text-xs mt-0.5"
+            style={{ color: COLORS.muted }}
+          >
+            #{orderId}
+          </Text>
+        )}
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: COLORS.card,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  backBtn: {
-    padding: 8,
-    marginRight: 12,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: COLORS.muted,
-    marginTop: 2,
-  },
-});

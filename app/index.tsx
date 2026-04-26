@@ -1,21 +1,38 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import {
+  ROLE_ADMIN,
+  ROLE_CUSTOMER,
+  ROLE_DOCTOR,
+  ROLE_LAB_TECHNICIAN,
+  ROLE_SAMPLE_COLLECTOR,
+} from "@/constants/roles";
 import { useAuth } from "@/contexts/AuthContext";
+import { presentFeedbackError } from "@/lib/feedbackModal";
+
+const getHomeRoute = (role?: string | null) => {
+  const r = role?.toUpperCase();
+  if (r === ROLE_CUSTOMER) return "/customer";
+  if (r === ROLE_ADMIN) return "/admin-home";
+  if (r === ROLE_DOCTOR) return "/doctor";
+  if (r === ROLE_LAB_TECHNICIAN) return "/lab-technician";
+  if (r === ROLE_SAMPLE_COLLECTOR) return "/sample-collector";
+  return "/staff";
+};
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -25,16 +42,19 @@ export default function LoginScreen() {
 
   const [focusField, setFocusField] = useState<"email" | "password" | null>(null);
 
-  const { login, isLoading: authLoading } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Không cần useEffect redirect ở đây vì navigation đã được xử lý trong login() function
+  useEffect(() => {
+    if (user && !authLoading) router.replace(getHomeRoute(user?.role) as any);
+
+  }, [user, authLoading]);
 
   const emailTrim = useMemo(() => email.trim(), [email]);
 
   const handleLogin = async () => {
     if (!emailTrim || !password.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập email và mật khẩu");
+      presentFeedbackError({ title: "Lỗi", message: "Vui lòng nhập email và mật khẩu" });
       return;
     }
 
@@ -43,16 +63,16 @@ export default function LoginScreen() {
     setIsLoading(false);
 
     if (!success) {
-      Alert.alert(
-        "Lỗi đăng nhập",
-        "Email hoặc mật khẩu không đúng, hoặc tài khoản này không được phép sử dụng ứng dụng mobile.\n\nChỉ tài khoản được cấu quyền vận hành (admin, nhân viên, bác sĩ, lab, thu mẫu) mới đăng nhập được."
-      );
+      presentFeedbackError({
+        title: "Lỗi đăng nhập",
+        message:
+          "Email hoặc mật khẩu không đúng",
+      });
     }
   };
 
   const inputWrap = (key: "email" | "password") =>
-    `h-14 rounded-2xl flex-row items-center px-4 border ${
-      focusField === key ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-slate-50"
+    `h-14 rounded-2xl flex-row items-center px-4 border ${focusField === key ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-slate-50"
     }`;
 
   if (authLoading) {
@@ -164,13 +184,12 @@ export default function LoginScreen() {
                 onPress={handleLogin}
                 disabled={isLoading}
                 activeOpacity={0.85}
-                className={`mt-5 h-14 rounded-2xl overflow-hidden ${
-                  isLoading ? "opacity-80" : ""
-                }`}
+                className={`mt-5 h-14 rounded-2xl overflow-hidden ${isLoading ? "opacity-80" : ""
+                  }`}
               >
                 <LinearGradient
                   colors={["#075985", "#0E7490"]}
-                  style={{flex: 1, alignItems: "center", justifyContent: "center"}}
+                  style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />

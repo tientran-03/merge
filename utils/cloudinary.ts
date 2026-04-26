@@ -1,4 +1,15 @@
-import { API_BASE_URL } from "@/config/api";
+import { Platform } from 'react-native';
+
+import { API_BASE_URL } from '@/config/api';
+export function normalizeLocalFileUri(uri: string): string {
+  if (!uri) return uri;
+  const trimmed = uri.trim();
+  if (trimmed.startsWith('file://')) return trimmed;
+  if (Platform.OS === 'android' && trimmed.startsWith('/')) {
+    return `file://${trimmed}`;
+  }
+  return trimmed;
+}
 
 export interface CloudinaryConfigMetadata {
   cloudName: string;
@@ -15,38 +26,23 @@ export interface CloudinaryUploadResult {
   bytes: number;
   format: string;
 }
-
-interface CloudinaryUploadFileOptions {
-  folder?: string;
-  mimeType?: string;
-  fileName?: string;
-}
-
-// Cache for cloudinary config
 let cachedCloudinaryConfig: CloudinaryConfigMetadata | null = null;
 let configFetchPromise: Promise<CloudinaryConfigMetadata> | null = null;
 
-/**
- * Fetch Cloudinary config from public config API
- */
 export const fetchCloudinaryConfigFromApi = async (): Promise<CloudinaryConfigMetadata> => {
-  // Return cached config if available
   if (cachedCloudinaryConfig) {
     return cachedCloudinaryConfig;
   }
-
-  // If already fetching, wait for the existing promise
   if (configFetchPromise) {
     return configFetchPromise;
   }
 
-  // Start fetching
   configFetchPromise = (async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/public/config/env`, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
@@ -62,22 +58,20 @@ export const fetchCloudinaryConfigFromApi = async (): Promise<CloudinaryConfigMe
         const metadata: CloudinaryConfigMetadata = {
           cloudName: cloudinaryEnv.VITE_CLOUDINARY_CLOUD_NAME,
           uploadPreset: cloudinaryEnv.VITE_CLOUDINARY_UPLOAD_PRESET,
-          folder: cloudinaryEnv.VITE_CLOUDINARY_FOLDER || "",
+          folder: cloudinaryEnv.VITE_CLOUDINARY_FOLDER || '',
         };
 
         if (!metadata.cloudName || !metadata.uploadPreset) {
-          throw new Error(
-            "Invalid Cloudinary config: missing cloudName or uploadPreset",
-          );
+          throw new Error('Invalid Cloudinary config: missing cloudName or uploadPreset');
         }
 
         cachedCloudinaryConfig = metadata;
         return metadata;
       }
 
-      throw new Error("Failed to fetch Cloudinary config from system config");
+      throw new Error('Failed to fetch Cloudinary config from system config');
     } catch (error) {
-      console.error("[Cloudinary] Error fetching config from API:", error);
+      console.error('[Cloudinary] Error fetching config from API:', error);
       throw error;
     } finally {
       configFetchPromise = null;
@@ -87,92 +81,143 @@ export const fetchCloudinaryConfigFromApi = async (): Promise<CloudinaryConfigMe
   return configFetchPromise;
 };
 
-/**
- * Upload image to Cloudinary from mobile app
- * @param imageUri - Local URI of the image (from expo-image-picker)
- * @param options - Upload options
- */
+function parseCloudinaryJson(data: Record<string, unknown>): CloudinaryUploadResult {
+  return {
+    url: String(data.url || ''),
+    secureUrl: String(data.secure_url || data.url || ''),
+    publicId: String(data.public_id || ''),
+    width: Number(data.width || 0),
+    height: Number(data.height || 0),
+    bytes: Number(data.bytes || 0),
+    format: String(data.format || ''),
+  };
+}
+function uploadImageToCloudinaryXHR(
+  imageUri: string,
+  uploadUrl: string,
+  uploadPreset: string,
+  uploadFolder?: string
+): Promise<CloudinaryUploadResult> {
+  const normalized = normalizeLocalFileUri(imageUri);
+  const fileExtension = normalized.split('.').pop()?.toLowerCase() || 'jpg';
+  const mimeType =
+    fileExtension === 'png'
+      ? 'image/png'
+      : fileExtension === 'gif'
+        ? 'image/gif'
+        : fileExtension === 'webp'
+          ? 'image/webp'
+          : 'image/jpeg';
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', uploadUrl);
+    xhr.timeout = 120_000;
+    xhr.responseType = 'text';
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        try {
+          const err = JSON.parse(xhr.responseText || '{}') as { error?: { message?: string } };
+          reject(new Error(err.error?.message || `Upload failed: ${xhr.status}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+        return;
+      }
+      try {
+        const data = JSON.parse(xhr.responseText || '{}') as Record<string, unknown>;
+        resolve(parseCloudinaryJson(data));
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error('Invalid Cloudinary response'));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Lỗi mạng khi tải hóa đơn lên Cloudinary'));
+    xhr.ontimeout = () => reject(new Error('Hết thời gian khi tải hóa đơn lên Cloudinary'));
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: normalized,
+      type: mimeType,
+      name: `invoice.${fileExtension}`,
+    } as any);
+    formData.append('upload_preset', uploadPreset);
+    if (uploadFolder) {
+      formData.append('folder', uploadFolder);
+    }
+    xhr.send(formData as any);
+  });
+}
+
 export const uploadImageToCloudinary = async (
   imageUri: string,
-  options?: { folder?: string },
+  options?: { folder?: string }
 ): Promise<CloudinaryUploadResult> => {
-  return uploadFileToCloudinary(imageUri, options);
-};
+  const config = await fetchCloudinaryConfigFromApi();
+  const { cloudName, uploadPreset, folder } = config;
+  const normalizedUri = normalizeLocalFileUri(imageUri);
+  const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
+  const mimeType =
+    fileExtension === 'png'
+      ? 'image/png'
+      : fileExtension === 'gif'
+        ? 'image/gif'
+        : fileExtension === 'webp'
+          ? 'image/webp'
+          : 'image/jpeg';
 
-export const uploadFileToCloudinary = async (
-  fileUri: string,
-  options?: CloudinaryUploadFileOptions,
-): Promise<CloudinaryUploadResult> => {
-  try {
-    // Fetch config from API if not cached
-    const config = await fetchCloudinaryConfigFromApi();
-    const { cloudName, uploadPreset, folder } = config;
-
-    // Create FormData
-    const formData = new FormData();
-
-    const fileExtension = fileUri.split(".").pop()?.toLowerCase() || "jpg";
-    const inferredMimeType =
-      fileExtension === "png"
-        ? "image/png"
-        : fileExtension === "gif"
-          ? "image/gif"
-          : fileExtension === "webp"
-            ? "image/webp"
-            : fileExtension === "pdf"
-              ? "application/pdf"
-              : "image/jpeg";
-    const mimeType = options?.mimeType || inferredMimeType;
-    const isPdf = mimeType === "application/pdf" || fileExtension === "pdf";
-    const resourceType = isPdf ? "raw" : "image";
-    const normalizedFileName =
-      options?.fileName?.trim() || `${isPdf ? "document" : "image"}.${fileExtension}`;
-
-    // Append file
-    formData.append("file", {
-      uri: fileUri,
+  const formData = new FormData();
+  if (Platform.OS === 'web' && normalizedUri.startsWith('blob:')) {
+    const blob = await fetch(normalizedUri).then((r) => r.blob());
+    const ext =
+      blob.type === 'image/png'
+        ? 'png'
+        : blob.type === 'image/webp'
+          ? 'webp'
+          : blob.type === 'image/gif'
+            ? 'gif'
+            : 'jpg';
+    formData.append('file', blob, `invoice.${ext}`);
+  } else {
+    formData.append('file', {
+      uri: normalizedUri,
       type: mimeType,
-      name: normalizedFileName,
+      name: `invoice.${fileExtension}`,
     } as any);
+  }
+  formData.append('upload_preset', uploadPreset);
+  const uploadFolder = options?.folder || folder;
+  if (uploadFolder) {
+    formData.append('folder', uploadFolder);
+  }
 
-    // Add upload preset
-    formData.append("upload_preset", uploadPreset);
+  const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-    // Add folder if specified
-    const uploadFolder = options?.folder || folder;
-    if (uploadFolder) {
-      formData.append("folder", uploadFolder);
-    }
-
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
-
-    // Note: Don't set Content-Type header - React Native will set it automatically with boundary
-    const response = await fetch(uploadUrl, {
-      method: "POST",
+  let response: Response;
+  try {
+    response = await fetch(uploadUrl, {
+      method: 'POST',
       body: formData,
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+  } catch (fetchErr: unknown) {
+    const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+    console.warn('[Cloudinary] fetch multipart failed (thường gặp trên Android), thử XHR:', msg);
+    try {
+      return await uploadImageToCloudinaryXHR(normalizedUri, uploadUrl, uploadPreset, uploadFolder);
+    } catch (xhrErr) {
+      console.error('[Cloudinary] XHR upload error:', xhrErr);
       throw new Error(
-        errorData.error?.message ||
-          `Upload failed: ${response.status} ${response.statusText}`,
+        xhrErr instanceof Error ? xhrErr.message : 'Không thể tải hóa đơn lên Cloudinary'
       );
     }
-
-    const data = await response.json();
-
-    return {
-      url: data.url || "",
-      secureUrl: data.secure_url || data.url || "",
-      publicId: data.public_id || "",
-      width: data.width || 0,
-      height: data.height || 0,
-      bytes: data.bytes || 0,
-      format: data.format || "",
-    };
-  } catch (error: any) {
-    console.error("[Cloudinary] Upload error:", error);
-    throw new Error(error?.message || "Failed to upload file to Cloudinary");
   }
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { error?: { message?: string } };
+    throw new Error(
+      errorData.error?.message || `Upload failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = (await response.json()) as Record<string, unknown>;
+  return parseCloudinaryJson(data);
 };

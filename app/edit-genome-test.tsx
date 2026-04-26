@@ -241,17 +241,21 @@ export default function EditGenomeTestScreen() {
       const submitData: CreateGenomeTestRequest = {
         testId: data.testId,
         testName: data.testName,
-        testDescription: data.testDescription || "",
-        code: data.code || "",
-        serviceId: data.serviceId || null,
+        testDescription: data.testDescription?.trim() || undefined,
+        code: data.code?.trim() || undefined,
+        serviceId: data.serviceId?.trim() || undefined,
         price: normalizedPrice,
-        taxRate: normalizedTaxRate || 0,
+        taxRate: Number.isFinite(normalizedTaxRate) ? normalizedTaxRate : 0,
         testSample: data.sampleInput
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean),
       };
-      const response = await genomeTestService.update(testId!, submitData);
+      const apiId =
+        String((testResponse?.data as any)?.id || "").trim() ||
+        String((testResponse?.data as any)?.testId || "").trim() ||
+        String(testId || "").trim();
+      const response = await genomeTestService.update(apiId, submitData);
       if (!response.success) {
         throw new Error(response.message || "Không thể cập nhật xét nghiệm");
       }

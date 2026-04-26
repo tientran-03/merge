@@ -12,7 +12,6 @@ export interface ApiResponse<T = unknown> {
     limit: number;
   };
 }
-
 export function isApiResponse<T>(data: unknown): data is ApiResponse<T> {
   return (
     typeof data === "object" &&
@@ -32,12 +31,6 @@ export function getApiResponseData<T>(
   return defaultValue;
 }
 
-/**
- * Safely gets data from an API response with better typing
- * @example
- * const customers = getApiResponseData<CustomerResponse>(customersResponse);
- * const single = getApiResponseSingle<OrderResponse>(orderResponse);
- */
 export function getApiResponseSingle<T>(
   response: unknown,
 ): T | undefined {
@@ -46,17 +39,10 @@ export function getApiResponseSingle<T>(
   }
   return undefined;
 }
-
-/**
- * Checks if an API response indicates success
- */
 export function isApiSuccess(response: unknown): boolean {
   return isApiResponse(response) && response.success === true;
 }
 
-/**
- * Gets error message from an API response
- */
 export function getApiErrorMessage(response: unknown, defaultMessage = 'Lỗi không xác định'): string {
   if (isApiResponse(response)) {
     return response.error ?? defaultMessage;

@@ -42,12 +42,12 @@ export function FormInfoBox({
 
   return (
     <View
-      className={`mt-4 border rounded-2xl p-3 flex-row ${config.container} ${containerClassName}`}
+      className={`mt-3 border rounded-2xl px-4 py-3.5 flex-row items-start gap-3 ${config.container} ${containerClassName}`}
     >
-      <View className="mt-0.5 mr-2">
-        {React.createElement(IconComponent as LucideIcon, { size: 16, color: config.iconColor as any })}
+      <View className="mt-0.5 shrink-0">
+        {React.createElement(IconComponent as LucideIcon, { size: 17, color: config.iconColor as any })}
       </View>
-      <Text className={`flex-1 text-xs leading-5 ${config.textColor}`}>{children}</Text>
+      <Text className={`flex-1 text-[13px] leading-[1.45] ${config.textColor}`}>{children}</Text>
     </View>
   );
 }

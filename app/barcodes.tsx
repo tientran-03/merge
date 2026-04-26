@@ -86,7 +86,7 @@ export default function BarcodesScreen() {
   });
 
   const createBatchMutation = useMutation({
-    mutationFn: (quantity: number) => barcodeService.createBatch(quantity),
+    mutationFn: (quantity: number) => barcodeService.createBatch({ quantity }),
     onSuccess: (resp, quantity) => {
       if (!resp.success) {
         Alert.alert("Lỗi", resp.error || "Không thể tạo nhiều barcode");

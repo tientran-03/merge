@@ -3,11 +3,14 @@ import { useFormContext, Controller, type FieldError } from "react-hook-form";
 import { TextInput, View, Text, TextInputProps } from "react-native";
 
 import type { FormNumericInputProps, NumericFormatterType } from "./types";
-import { clampDecimalStringToMax } from "@/utils/numericClamp";
-import { formatVndAmountInput } from "@/utils/money";
 
 const formatters: Record<NumericFormatterType, (value: string) => string> = {
-  currency: formatVndAmountInput,
+  currency: (value: string) => {
+    const cleaned = value.replace(/[^0-9]/g, "");
+    if (!cleaned) return "";
+    const number = parseInt(cleaned, 10);
+    return number.toLocaleString("vi-VN");
+  },
   phone: (value: string) => {
     return value.replace(/[^0-9]/g, "");
   },
@@ -42,17 +45,19 @@ export const FormNumericInput = forwardRef<TextInput, FormNumericInputProps>(
       iconPosition = "left",
       placeholder,
       disabled = false,
-      numericMax,
       containerClassName = "",
       containerStyle,
     },
     ref
   ) => {
-    const { control } = useFormContext();
+    const { control, formState: { errors } } = useFormContext();
+    const error = errors[name];
 
     const formatter = formatters[type];
     const keyboardType = getKeyboardsType[type];
 
+    const hasError = !!error;
+    const borderColor = hasError ? "border-red-400" : "border-slate-200";
     const iconElement = icon && <View className="mr-3">{icon}</View>;
 
     return (
@@ -65,47 +70,37 @@ export const FormNumericInput = forwardRef<TextInput, FormNumericInputProps>(
         <Controller
           control={control}
           name={name}
-          render={({ field: { onChange, onBlur, value }, fieldState }) => {
-            const error = fieldState.error;
-            const hasError = !!error;
-            const borderColor = hasError ? "border-red-400" : "border-slate-200";
-            return (
-              <>
-                <View
-                  className={`bg-white rounded-2xl border px-4 py-3.5 flex-row items-center ${borderColor}`}
-                >
-                  {iconPosition === "left" && iconElement}
-                  <TextInput
-                    ref={ref}
-                    className="flex-1 text-[14px] font-bold text-slate-800"
-                    placeholder={placeholder || "Nhập giá trị"}
-                    placeholderTextColor="#94A3B8"
-                    value={value === undefined || value === null ? "" : String(value)}
-                    onChangeText={(text) => {
-                      let formatted = formatter ? formatter(text) : text;
-                      if (numericMax !== undefined) {
-                        formatted = clampDecimalStringToMax(formatted, numericMax);
-                      }
-                      onChange(formatted);
-                    }}
-                    onBlur={onBlur}
-                    keyboardType={keyboardType}
-                    editable={!disabled}
-                  />
-                  {iconPosition === "right" && iconElement}
-                </View>
-                {error && (
-                  <Text className="text-[11px] text-red-500 mt-1">
-                    {(error as FieldError)?.message?.toString() || "Giá trị không hợp lệ"}
-                  </Text>
-                )}
-                {helperText && !error && (
-                  <Text className="mt-2 text-[11px] text-slate-500">{helperText}</Text>
-                )}
-              </>
-            );
-          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View
+              className={`bg-white rounded-2xl border px-4 py-3.5 flex-row items-center ${borderColor}`}
+            >
+              {iconPosition === "left" && iconElement}
+              <TextInput
+                ref={ref}
+                className="flex-1 text-[14px] font-bold text-slate-800"
+                placeholder={placeholder || "Nhập giá trị"}
+                placeholderTextColor="#94A3B8"
+                value={value || ""}
+                onChangeText={(text) => {
+                  const formatted = formatter ? formatter(text) : text;
+                  onChange(formatted);
+                }}
+                onBlur={onBlur}
+                keyboardType={keyboardType}
+                editable={!disabled}
+              />
+              {iconPosition === "right" && iconElement}
+            </View>
+          )}
         />
+        {error && (
+          <Text className="text-[11px] text-red-500 mt-1">
+            {(error as FieldError)?.message?.toString() || "Giá trị không hợp lệ"}
+          </Text>
+        )}
+        {helperText && !error && (
+          <Text className="mt-2 text-[11px] text-slate-500">{helperText}</Text>
+        )}
       </View>
     );
   }

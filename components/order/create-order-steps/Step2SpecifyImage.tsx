@@ -1,20 +1,27 @@
 import * as ImagePicker from 'expo-image-picker';
-import { Camera, X, Image as ImageIcon } from 'lucide-react-native';
+import { Camera, Image as ImageIcon, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 
 interface Step2Props {
   isUploading?: boolean;
   onImageSelect?: (uri: string) => Promise<string | null>;
+  fieldName?: string;
+  title?: string;
 }
 
-export default function Step2SpecifyImage({ isUploading = false, onImageSelect }: Step2Props) {
+export default function Step2SpecifyImage({
+  isUploading = false,
+  onImageSelect,
+  fieldName = 'specifyVoteTestImagePath',
+  title = 'Hình ảnh phiếu xét nghiệm',
+}: Step2Props) {
   const { watch, setValue } = useFormContext();
-  const specifyVoteTestImagePath = watch('specifyVoteTestImagePath');
+  const storedPath = watch(fieldName as any);
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
 
-  const displayImage = localImageUri || specifyVoteTestImagePath;
+  const displayImage = localImageUri || storedPath;
 
   const handleSelectImage = async () => {
     try {
@@ -38,10 +45,10 @@ export default function Step2SpecifyImage({ isUploading = false, onImageSelect }
         if (onImageSelect) {
           const uploadedUrl = await onImageSelect(uri);
           if (uploadedUrl) {
-            setValue('specifyVoteTestImagePath', uploadedUrl);
+            setValue(fieldName as any, uploadedUrl);
           }
         } else {
-          setValue('specifyVoteTestImagePath', uri);
+          setValue(fieldName as any, uri);
         }
       }
     } catch (error) {
@@ -71,10 +78,10 @@ export default function Step2SpecifyImage({ isUploading = false, onImageSelect }
         if (onImageSelect) {
           const uploadedUrl = await onImageSelect(uri);
           if (uploadedUrl) {
-            setValue('specifyVoteTestImagePath', uploadedUrl);
+            setValue(fieldName as any, uploadedUrl);
           }
         } else {
-          setValue('specifyVoteTestImagePath', uri);
+          setValue(fieldName as any, uri);
         }
       }
     } catch (error) {
@@ -85,14 +92,12 @@ export default function Step2SpecifyImage({ isUploading = false, onImageSelect }
 
   const handleRemoveImage = () => {
     setLocalImageUri(null);
-    setValue('specifyVoteTestImagePath', '');
+    setValue(fieldName as any, '');
   };
 
   return (
     <View className="bg-white rounded-2xl border border-slate-100 p-4">
-      <Text className="text-[15px] font-extrabold text-slate-900 mb-4">
-        Hình ảnh phiếu xét nghiệm
-      </Text>
+      <Text className="text-[15px] font-extrabold text-slate-900 mb-4">{title}</Text>
 
       {isUploading ? (
         <View className="h-48 bg-slate-50 rounded-xl items-center justify-center border border-dashed border-slate-300">

@@ -1,22 +1,28 @@
-import { useInfiniteQuery as useReactQueryInfiniteQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useInfiniteQuery as useReactQueryInfiniteQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 export interface PaginatedResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
   size: number;
-  number: number; // current page (0-based)
+  number: number;
   first: boolean;
   last: boolean;
 }
 
 export interface UseInfiniteQueryOptions<T> {
   queryKey: (string | number | undefined)[];
-  queryFn: (page: number, size: number) => Promise<{ success: boolean; data?: PaginatedResponse<T> | T[] }>;
+  queryFn: (
+    page: number,
+    size: number
+  ) => Promise<{ success: boolean; data?: PaginatedResponse<T> | T[] }>;
   defaultPageSize?: number;
   enabled?: boolean;
-  getNextPageParam?: (lastPage: { success: boolean; data?: PaginatedResponse<T> | T[] }) => number | undefined;
+  getNextPageParam?: (lastPage: {
+    success: boolean;
+    data?: PaginatedResponse<T> | T[];
+  }) => number | undefined;
 }
 
 export interface UseInfiniteQueryReturn<T> {
@@ -49,34 +55,33 @@ export function useInfiniteQuery<T>({
     hasNextPage,
     fetchNextPage,
   } = useReactQueryInfiniteQuery({
-    queryKey: [...queryKey, "infinite"],
+    queryKey: [...queryKey, 'infinite'],
     queryFn: async ({ pageParam = 0 }) => {
       return await queryFn(pageParam, defaultPageSize);
     },
-    getNextPageParam: getNextPageParam || ((lastPage) => {
-      if (!lastPage?.success || !lastPage.data) return undefined;
-      
-      // Check if response is paginated
-      if (Array.isArray(lastPage.data)) {
-        // Not paginated, no more pages
-        return undefined;
-      }
+    getNextPageParam:
+      getNextPageParam ||
+      (lastPage => {
+        if (!lastPage?.success || !lastPage.data) return undefined;
+        if (Array.isArray(lastPage.data)) {
+          return undefined;
+        }
 
-      const paginated = lastPage.data as PaginatedResponse<T>;
-      if (paginated.last) return undefined;
-      return paginated.number + 1;
-    }),
+        const paginated = lastPage.data as PaginatedResponse<T>;
+        if (paginated.last) return undefined;
+        return paginated.number + 1;
+      }),
     enabled,
     initialPageParam: 0,
   });
 
   const flattenedData = useMemo(() => {
     if (!data?.pages) return [];
-    
+
     const allItems: T[] = [];
-    data.pages.forEach((page) => {
+    data.pages.forEach(page => {
       if (!page?.success || !page.data) return;
-      
+
       if (Array.isArray(page.data)) {
         allItems.push(...page.data);
       } else {
@@ -84,7 +89,7 @@ export function useInfiniteQuery<T>({
         allItems.push(...(paginated.content || []));
       }
     });
-    
+
     return allItems;
   }, [data]);
 
