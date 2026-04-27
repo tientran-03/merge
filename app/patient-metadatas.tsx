@@ -1,30 +1,30 @@
+import { useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
-import { useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
-  Search,
-  X,
-  FileText,
-  CloudUpload,
-  ShieldCheck,
   ArrowUp,
+  CloudUpload,
   Download,
+  FileText,
+  Search,
+  ShieldCheck,
+  X,
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
-  StatusBar,
   Alert,
   Modal,
   Platform,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,7 +36,7 @@ import { usePaginatedQuery } from "@/hooks/usePaginatedQuery";
 import { doctorService } from "@/services/doctorService";
 import { notificationService } from "@/services/notificationService";
 import { orderService, type OrderResponse } from "@/services/orderService";
-import { patientMetadataService, PatientMetadataResponse } from "@/services/patientMetadataService";
+import { PatientMetadataResponse, patientMetadataService } from "@/services/patientMetadataService";
 import { specifyVoteTestService } from "@/services/specifyVoteTestService";
 import { resolvePickerOriginalFileName } from "@/utils/document-picker-filename";
 import { downloadAndShareAnalysisResultsZip } from "@/utils/download-analysis-zip";
@@ -163,7 +163,7 @@ const pickFirstOrderBySpecify = async (specifyId: string): Promise<OrderResponse
   return null;
 };
 
-/** Khớp web `approve-results-modal`: duyệt mẫu là chuyển phiếu + đơn sang «chờ duyệt kết quả». */
+
 async function syncSpecifyAndOrderWhenAllSamplesCompleted(
   specifyId: string,
   approvedLabcode: string,
@@ -270,7 +270,7 @@ export default function PatientMetadatasScreen() {
   // Enforce: only show metadata when the order is paid (paymentStatus=COMPLETED)
   const [paidBySpecify, setPaidBySpecify] = useState<Record<string, boolean>>({});
 
-  /** Giống web `FastqUploadModal`: chọn R1 và R2 riêng, kiểm tra nhanh, rồi mới bắt đầu upload. */
+
   const [fastqModalOpen, setFastqModalOpen] = useState(false);
   const [fastqModalPreparing, setFastqModalPreparing] = useState(false);
   const [fastqModalContext, setFastqModalContext] = useState<{
@@ -322,7 +322,7 @@ export default function PatientMetadatasScreen() {
       const paid = paidBySpecify[sid];
       return paid !== false;
     });
-    
+
     // Search filter
     const q = searchQuery.trim().toLowerCase();
     if (q) {
@@ -409,7 +409,7 @@ export default function PatientMetadatasScreen() {
     };
   }, [metadataList]);
 
-  /** Giống web: FASTQ trên MinIO theo BV + labcode; BV lấy từ phiếu chỉ định. */
+
   const canShowFastqActions = (m: PatientMetadataResponse) =>
     Boolean(m.labcode?.trim() && m.specifyId?.trim() && m.hasFastq !== false);
 
@@ -424,7 +424,7 @@ export default function PatientMetadatasScreen() {
     );
   };
 
-  /** Giống web `patient-metadata-list`: có FASTQ + trạng thái cho phép gửi pipeline. */
+
   const canShowGenAnalysis = (m: PatientMetadataResponse) => {
     if (m.hasFastq !== true) return false;
     const s = (m.status || "").toLowerCase();
@@ -925,9 +925,8 @@ export default function PatientMetadatasScreen() {
         </View>
 
         {/* Search */}
-        <View className={`mt-3 h-12 rounded-2xl flex-row items-center px-4 border ${
-          focusSearch ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-slate-50"
-        }`}>
+        <View className={`mt-3 h-12 rounded-2xl flex-row items-center px-4 border ${focusSearch ? "border-sky-500 bg-sky-50" : "border-slate-200 bg-slate-50"
+          }`}>
           <Search size={18} color={focusSearch ? "#0284C7" : "#64748B"} />
           <TextInput
             className="flex-1 ml-3 text-[15px] text-slate-900 font-semibold"
@@ -960,17 +959,15 @@ export default function PatientMetadatasScreen() {
             <TouchableOpacity
               key={status.value}
               onPress={() => setStatusFilter(status.value)}
-              className={`px-3 py-1.5 rounded-xl border ${
-                statusFilter === status.value
+              className={`px-3 py-1.5 rounded-xl border ${statusFilter === status.value
                   ? "bg-sky-600 border-sky-600"
                   : "bg-white border-slate-200"
-              }`}
+                }`}
               activeOpacity={0.8}
             >
               <Text
-                className={`text-xs font-extrabold ${
-                  statusFilter === status.value ? "text-white" : "text-slate-700"
-                }`}
+                className={`text-xs font-extrabold ${statusFilter === status.value ? "text-white" : "text-slate-700"
+                  }`}
               >
                 {status.label}
               </Text>
@@ -1024,14 +1021,14 @@ export default function PatientMetadatasScreen() {
                 </View>
 
                 {metadata.patientId && (
-                <View className="flex-row items-center mt-2">
-                  <Text className="text-xs text-slate-500 font-semibold">
-                    Bệnh nhân:{" "}
-                    {metadata.patientName
-                      ? `${metadata.patientName} (${metadata.patientId || "-"})`
-                      : metadata.patientId || "-"}
-                  </Text>
-                </View>
+                  <View className="flex-row items-center mt-2">
+                    <Text className="text-xs text-slate-500 font-semibold">
+                      Bệnh nhân:{" "}
+                      {metadata.patientName
+                        ? `${metadata.patientName} (${metadata.patientId || "-"})`
+                        : metadata.patientId || "-"}
+                    </Text>
+                  </View>
                 )}
 
                 {metadata.specifyId && (
@@ -1178,7 +1175,7 @@ export default function PatientMetadatasScreen() {
         onSuccess={() => void refetch()}
       />
 
-      {/* Giống web `fastq-upload-modal.tsx`: 2 ô chọn R1/R2 riêng, Kiểm tra nhanh, Bắt đầu Upload */}
+
       <Modal
         visible={fastqModalOpen}
         transparent
@@ -1248,9 +1245,8 @@ export default function PatientMetadatasScreen() {
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => void pickFastqForModal(1)}
-                    className={`border-2 border-dashed rounded-xl p-4 mb-3 ${
-                      fastqModalSlot1 ? "border-emerald-400 bg-emerald-50" : "border-slate-300 bg-white"
-                    }`}
+                    className={`border-2 border-dashed rounded-xl p-4 mb-3 ${fastqModalSlot1 ? "border-emerald-400 bg-emerald-50" : "border-slate-300 bg-white"
+                      }`}
                   >
                     {fastqModalSlot1 ? (
                       <View className="flex-row items-center justify-between">
@@ -1297,9 +1293,8 @@ export default function PatientMetadatasScreen() {
                   <TouchableOpacity
                     activeOpacity={0.85}
                     onPress={() => void pickFastqForModal(2)}
-                    className={`border-2 border-dashed rounded-xl p-4 mb-3 ${
-                      fastqModalSlot2 ? "border-emerald-400 bg-emerald-50" : "border-slate-300 bg-white"
-                    }`}
+                    className={`border-2 border-dashed rounded-xl p-4 mb-3 ${fastqModalSlot2 ? "border-emerald-400 bg-emerald-50" : "border-slate-300 bg-white"
+                      }`}
                   >
                     {fastqModalSlot2 ? (
                       <View className="flex-row items-center justify-between">
@@ -1342,16 +1337,14 @@ export default function PatientMetadatasScreen() {
 
                   {fastqModalValidation && (
                     <View
-                      className={`rounded-xl p-3 mb-3 border ${
-                        fastqModalValidation.valid
+                      className={`rounded-xl p-3 mb-3 border ${fastqModalValidation.valid
                           ? "bg-emerald-50 border-emerald-200"
                           : "bg-red-50 border-red-200"
-                      }`}
+                        }`}
                     >
                       <Text
-                        className={`text-sm font-bold ${
-                          fastqModalValidation.valid ? "text-emerald-900" : "text-red-900"
-                        }`}
+                        className={`text-sm font-bold ${fastqModalValidation.valid ? "text-emerald-900" : "text-red-900"
+                          }`}
                       >
                         {fastqModalValidation.message}
                       </Text>
@@ -1382,11 +1375,10 @@ export default function PatientMetadatasScreen() {
                 activeOpacity={0.85}
                 onPress={handleFastqModalValidate}
                 disabled={!fastqModalSlot1 || !fastqModalSlot2}
-                className={`flex-row items-center justify-center gap-2 py-3 rounded-xl border ${
-                  fastqModalSlot1 && fastqModalSlot2
+                className={`flex-row items-center justify-center gap-2 py-3 rounded-xl border ${fastqModalSlot1 && fastqModalSlot2
                     ? "bg-white border-slate-300"
                     : "bg-slate-100 border-slate-200 opacity-60"
-                }`}
+                  }`}
               >
                 <ShieldCheck size={18} color="#475569" />
                 <Text className="text-slate-800 font-extrabold text-sm">Kiểm tra nhanh</Text>

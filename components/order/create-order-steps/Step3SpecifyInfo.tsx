@@ -275,7 +275,7 @@ export default function Step3SpecifyInfo({
         disabled={!canEdit('specifyId')}
       />
       <Text className="mt-2 text-[11px] font-semibold text-slate-500 leading-4">
-        Chỉ hiển thị các mã phiếu chưa được gắn vào đơn hàng khác (giống web).
+        Chỉ hiển thị các mã phiếu chưa được gắn vào đơn hàng khác
       </Text>
       <View className="mt-4 pt-4 border-t border-slate-100">
         <Text className="text-[13px] font-bold text-slate-600 mb-3">
@@ -445,18 +445,16 @@ export default function Step3SpecifyInfo({
             onPress={clearGenomeTestSelection}
             disabled={String(genomeTestId || '').trim().length === 0 || (isEditMode && !canEdit('specifyId'))}
             activeOpacity={0.8}
-            className={`mb-1 h-11 w-11 rounded-xl border items-center justify-center ${
-              String(genomeTestId || '').trim().length === 0 || (isEditMode && !canEdit('specifyId'))
+            className={`mb-1 h-11 w-11 rounded-xl border items-center justify-center ${String(genomeTestId || '').trim().length === 0 || (isEditMode && !canEdit('specifyId'))
                 ? 'border-slate-200 bg-slate-100'
                 : 'border-rose-200 bg-rose-50'
-            }`}
+              }`}
           >
             <Text
-              className={`text-[18px] font-extrabold ${
-                String(genomeTestId || '').trim().length === 0 || (isEditMode && !canEdit('specifyId'))
+              className={`text-[18px] font-extrabold ${String(genomeTestId || '').trim().length === 0 || (isEditMode && !canEdit('specifyId'))
                   ? 'text-slate-400'
                   : 'text-rose-600'
-              }`}
+                }`}
             >
               ×
             </Text>

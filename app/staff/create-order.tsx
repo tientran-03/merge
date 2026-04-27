@@ -1495,7 +1495,7 @@ export default function CreateOrderScreen() {
         return true;
       }
       case 5: {
-        // Match web behavior: clinical fields are not mandatory for step navigation.
+
         return true;
       }
       case 7: {
@@ -2158,8 +2158,8 @@ export default function CreateOrderScreen() {
                 onPress={openQuickPatientPicker}
                 disabled={!String(quickSpecifyForm.doctorId || '').trim()}
                 className={`border rounded-xl px-3 py-3 mb-2 ${String(quickSpecifyForm.doctorId || '').trim()
-                    ? 'border-slate-200 bg-white'
-                    : 'border-slate-200 bg-slate-50'
+                  ? 'border-slate-200 bg-white'
+                  : 'border-slate-200 bg-slate-50'
                   }`}
               >
                 <Text className="text-[12px] text-slate-500">Bệnh nhân *</Text>
@@ -2182,8 +2182,8 @@ export default function CreateOrderScreen() {
                 onPress={openQuickGenomePicker}
                 disabled={!String(quickSpecifyForm.serviceId || '').trim()}
                 className={`border rounded-xl px-3 py-3 mb-2 ${String(quickSpecifyForm.serviceId || '').trim()
-                    ? 'border-slate-200 bg-white'
-                    : 'border-slate-200 bg-slate-50'
+                  ? 'border-slate-200 bg-white'
+                  : 'border-slate-200 bg-slate-50'
                   }`}
               >
                 <Text className="text-[12px] text-slate-500">Xét nghiệm *</Text>

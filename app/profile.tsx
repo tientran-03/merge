@@ -1,35 +1,35 @@
-import { Stack, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { Stack, useRouter } from "expo-router";
 import {
-  ChevronDown,
-  ChevronUp,
-  User as UserIcon,
   ArrowLeft,
-  ShieldCheck,
-  Phone,
-  Mail,
+  BadgeCheck,
   Building2,
   Calendar,
-  BadgeCheck,
-  Save,
-  X,
-  Smartphone,
+  ChevronDown,
+  ChevronUp,
+  Mail,
   Monitor,
+  Phone,
   RefreshCw,
+  Save,
+  ShieldCheck,
+  Smartphone,
+  User as UserIcon,
+  X,
 } from "lucide-react-native";
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  UIManager,
-  LayoutAnimation,
-  TextInput,
+  ActivityIndicator,
   Alert,
   Image,
-  ActivityIndicator,
+  LayoutAnimation,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  UIManager,
+  View,
 } from "react-native";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -422,8 +422,8 @@ export default function ProfileScreen() {
   const handleChangeAvatar = async () => {
     if (!user || isUploadingAvatar) return;
 
-    // Hiện tại upload Cloudinary chỉ hỗ trợ tốt trên mobile (iOS/Android)
-    // Web preview với expo có thể bị lỗi file [object Object]
+
+
     if (Platform.OS === "web") {
       Alert.alert(
         "Thông báo",
@@ -576,11 +576,10 @@ export default function ProfileScreen() {
                     <TouchableOpacity
                       onPress={handleSave}
                       disabled={isSaving}
-                      className={`px-3 py-1.5 rounded-2xl flex-row items-center border ${
-                        isSaving
+                      className={`px-3 py-1.5 rounded-2xl flex-row items-center border ${isSaving
                           ? "bg-sky-200 border-sky-200"
                           : "bg-sky-600 border-sky-600"
-                      }`}
+                        }`}
                       activeOpacity={0.85}
                     >
                       <Save size={14} color="#FFFFFF" />
@@ -658,11 +657,10 @@ export default function ProfileScreen() {
             </View>
 
             <View
-              className={`w-9 h-9 rounded-xl items-center justify-center border ${
-                isExpanded
+              className={`w-9 h-9 rounded-xl items-center justify-center border ${isExpanded
                   ? "bg-sky-600 border-sky-600"
                   : "bg-sky-50 border-sky-200"
-              }`}
+                }`}
             >
               {isExpanded ? (
                 <ChevronUp
@@ -695,9 +693,8 @@ export default function ProfileScreen() {
                         }
                       }}
                       placeholder="Nhập họ tên"
-                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${
-                        formErrors.name ? "border-red-300" : "border-sky-200"
-                      }`}
+                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${formErrors.name ? "border-red-300" : "border-sky-200"
+                        }`}
                     />
                     {!!formErrors.name && (
                       <Text className="mt-1 text-[11px] font-bold text-red-500">
@@ -719,9 +716,8 @@ export default function ProfileScreen() {
                       }}
                       placeholder="Nhập số điện thoại"
                       keyboardType="phone-pad"
-                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${
-                        formErrors.phone ? "border-red-300" : "border-sky-200"
-                      }`}
+                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${formErrors.phone ? "border-red-300" : "border-sky-200"
+                        }`}
                     />
                     {!!formErrors.phone && (
                       <Text className="mt-1 text-[11px] font-bold text-red-500">
@@ -742,9 +738,8 @@ export default function ProfileScreen() {
                         }
                       }}
                       placeholder="dd/MM/yyyy"
-                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${
-                        formErrors.dateOfBirth ? "border-red-300" : "border-sky-200"
-                      }`}
+                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${formErrors.dateOfBirth ? "border-red-300" : "border-sky-200"
+                        }`}
                     />
                     {!!formErrors.dateOfBirth && (
                       <Text className="mt-1 text-[11px] font-bold text-red-500">
@@ -765,9 +760,8 @@ export default function ProfileScreen() {
                         }
                       }}
                       placeholder="Nam / Nữ / Khác"
-                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${
-                        formErrors.gender ? "border-red-300" : "border-sky-200"
-                      }`}
+                      className={`rounded-2xl border px-3 py-2.5 text-[13px] text-slate-900 bg-white ${formErrors.gender ? "border-red-300" : "border-sky-200"
+                        }`}
                     />
                     {!!formErrors.gender && (
                       <Text className="mt-1 text-[11px] font-bold text-red-500">
@@ -782,9 +776,8 @@ export default function ProfileScreen() {
                   return (
                     <View
                       key={`${item.label}-${index}`}
-                      className={`flex-row items-start rounded-2xl border border-sky-100 p-3.5 ${
-                        index !== infoItems.length - 1 ? "mb-3" : ""
-                      }`}
+                      className={`flex-row items-start rounded-2xl border border-sky-100 p-3.5 ${index !== infoItems.length - 1 ? "mb-3" : ""
+                        }`}
                     >
                       <View className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 items-center justify-center">
                         <Icon size={18} color="#0284C7" />
@@ -825,11 +818,10 @@ export default function ProfileScreen() {
             </View>
 
             <View
-              className={`w-9 h-9 rounded-xl items-center justify-center border ${
-                securityExpanded
+              className={`w-9 h-9 rounded-xl items-center justify-center border ${securityExpanded
                   ? "bg-sky-600 border-sky-600"
                   : "bg-sky-50 border-sky-200"
-              }`}
+                }`}
             >
               {securityExpanded ? (
                 <ChevronUp size={18} color="#FFFFFF" />
@@ -878,11 +870,10 @@ export default function ProfileScreen() {
                       {activeSessions.map((session) => (
                         <View
                           key={session.sessionId}
-                          className={`rounded-2xl border p-3.5 mb-3 ${
-                            session.currentSession
+                          className={`rounded-2xl border p-3.5 mb-3 ${session.currentSession
                               ? "border-sky-300 bg-sky-50"
                               : "border-sky-100 bg-white"
-                          }`}
+                            }`}
                         >
                           <View className="flex-row items-start">
                             <View className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 items-center justify-center mt-0.5">
@@ -943,11 +934,10 @@ export default function ProfileScreen() {
                               <TouchableOpacity
                                 onPress={() => handleTrustDevice(session)}
                                 disabled={isTrustingDevice}
-                                className={`px-3 py-2 rounded-2xl border ${
-                                  isTrustingDevice
+                                className={`px-3 py-2 rounded-2xl border ${isTrustingDevice
                                     ? "bg-slate-100 border-slate-200"
                                     : "bg-white border-sky-200"
-                                }`}
+                                  }`}
                                 activeOpacity={0.85}
                               >
                                 <Text className="text-xs font-extrabold text-sky-700">
@@ -959,11 +949,10 @@ export default function ProfileScreen() {
                               <TouchableOpacity
                                 onPress={() => handleLogoutOtherSession(session)}
                                 disabled={loggingOutSessionId === session.sessionId}
-                                className={`px-3 py-2 rounded-2xl border ${
-                                  loggingOutSessionId === session.sessionId
+                                className={`px-3 py-2 rounded-2xl border ${loggingOutSessionId === session.sessionId
                                     ? "bg-slate-100 border-slate-200"
                                     : "bg-red-50 border-red-200"
-                                }`}
+                                  }`}
                                 activeOpacity={0.85}
                               >
                                 <Text className="text-xs font-extrabold text-red-700">

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Stack, useRouter } from "expo-router";
 import * as Print from "expo-print";
+import { Stack, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { ChevronDown, FileDown } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
@@ -19,8 +19,8 @@ import { orderStatusForUpdatePayload } from "@/lib/constants/order-status";
 import { getApiResponseData } from "@/lib/types/api-types";
 import { genomeTestService, type GenomeTestResponse } from "@/services/genomeTestService";
 import { orderService, type OrderResponse } from "@/services/orderService";
-import { patientService, type PatientResponse } from "@/services/patientService";
 import { patientMetadataService } from "@/services/patientMetadataService";
+import { patientService, type PatientResponse } from "@/services/patientService";
 import { sampleAddService, type SampleAddResponse } from "@/services/sampleAddService";
 import {
   sampleAddServiceConfigService,
@@ -266,7 +266,7 @@ export default function AdminInvoiceCreateScreen() {
     const specifyId = String(order.specifyId?.specifyVoteID || "").trim();
     if (!specifyId) return;
 
-    // Khớp web admin: đơn đã có customerFastq=true thì không tự tạo metadata ở bước thanh toán.
+
     if ((order as { customerFastq?: boolean }).customerFastq === true) return;
 
     const existing = await patientMetadataService.getBySpecifyId(specifyId);
@@ -578,7 +578,7 @@ export default function AdminInvoiceCreateScreen() {
             Alert.alert(
               "Cảnh báo",
               metaErr?.message ||
-                "Đã xuất hóa đơn và cập nhật thanh toán nhưng chưa tạo được mẫu metadata.",
+              "Đã xuất hóa đơn và cập nhật thanh toán nhưng chưa tạo được mẫu metadata.",
             );
           }
           queryClient.invalidateQueries({ queryKey: ["invoice-create-orders"] });
@@ -628,7 +628,7 @@ export default function AdminInvoiceCreateScreen() {
                   Alert.alert(
                     "Cảnh báo",
                     orderUpdateRes.error ||
-                      "Đã thanh toán mẫu bổ sung nhưng chưa lưu được trạng thái thanh toán đơn hàng cha.",
+                    "Đã thanh toán mẫu bổ sung nhưng chưa lưu được trạng thái thanh toán đơn hàng cha.",
                   );
                 }
               }
@@ -636,19 +636,19 @@ export default function AdminInvoiceCreateScreen() {
               Alert.alert(
                 "Cảnh báo",
                 orderErr?.message ||
-                  "Đã thanh toán mẫu bổ sung nhưng chưa cập nhật được đơn hàng cha.",
+                "Đã thanh toán mẫu bổ sung nhưng chưa cập nhật được đơn hàng cha.",
               );
             }
           }
 
-          // Khớp web admin: thanh toán mẫu bổ sung KHÔNG tự chuyển trạng thái đơn cha sang completed.
+
           try {
             await ensureSampleAddMetadataForCashInvoice(selectedSampleAdd);
           } catch (metaErr: any) {
             Alert.alert(
               "Cảnh báo",
               metaErr?.message ||
-                "Đã xuất hóa đơn mẫu bổ sung nhưng chưa tạo được metadata.",
+              "Đã xuất hóa đơn mẫu bổ sung nhưng chưa tạo được metadata.",
             );
           }
           queryClient.invalidateQueries({ queryKey: ["invoice-create-orders"] });
@@ -691,442 +691,435 @@ export default function AdminInvoiceCreateScreen() {
             Tạo hoá đơn thanh toán cho dịch vụ xét nghiệm
           </Text>
 
-        <View className="flex-row gap-2 mt-5">
-          <TouchableOpacity
-            className={`flex-1 rounded-xl py-3 px-3 border ${isOrder ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"}`}
-            onPress={() => {
-              if (sourceType !== "ORDER") setSourceAndReset("ORDER");
-            }}
-            activeOpacity={0.85}
-          >
-            <Text
-              className={`text-center text-[13px] font-semibold ${isOrder ? "text-white" : "text-slate-600"}`}
+          <View className="flex-row gap-2 mt-5">
+            <TouchableOpacity
+              className={`flex-1 rounded-xl py-3 px-3 border ${isOrder ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"}`}
+              onPress={() => {
+                if (sourceType !== "ORDER") setSourceAndReset("ORDER");
+              }}
+              activeOpacity={0.85}
             >
-              Đơn hàng
+              <Text
+                className={`text-center text-[13px] font-semibold ${isOrder ? "text-white" : "text-slate-600"}`}
+              >
+                Đơn hàng
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`flex-1 rounded-xl py-3 px-3 border ${!isOrder ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
+                }`}
+              onPress={() => {
+                if (sourceType !== "SAMPLE_ADD") setSourceAndReset("SAMPLE_ADD");
+              }}
+              activeOpacity={0.85}
+            >
+              <Text
+                className={`text-center text-[13px] font-semibold ${!isOrder ? "text-white" : "text-slate-600"}`}
+              >
+                Mẫu bổ sung
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="mt-5 pb-3 border-b border-slate-200">
+            <Text className="text-[16px] font-semibold text-slate-700">
+              {isOrder ? "Thông tin hoá đơn" : "Hoá đơn mẫu bổ sung"}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`flex-1 rounded-xl py-3 px-3 border ${
-              !isOrder ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
+          </View>
+
+          <View className="mt-4">
+            {isOrder ? (
+              <>
+                <Text className="text-[12px] font-bold text-slate-600 mb-2">Đơn hàng *</Text>
+                {!isOrderSelectionLocked && unpaidOrders.length === 0 ? (
+                  <Text className="text-[11px] text-amber-700 font-semibold mb-2">
+                    Không có đơn chưa thanh toán — các đơn đã thanh toán sẽ không hiện ở đây.
+                  </Text>
+                ) : null}
+                <TouchableOpacity
+                  disabled={isOrderSelectionLocked || unpaidOrders.length === 0}
+                  className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${isOrderSelectionLocked || unpaidOrders.length === 0 ? "opacity-55" : ""
+                    }`}
+                  onPress={() => {
+                    if (!isOrderSelectionLocked && unpaidOrders.length > 0) setActiveModal("order");
+                  }}
+                >
+                  <Text className={selectedOrder ? "text-slate-900 font-bold" : "text-slate-400"}>
+                    {selectedOrder?.orderName || "Chọn đơn hàng"}
+                  </Text>
+                  {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
+                </TouchableOpacity>
+                {isOrderSelectionLocked ? (
+                  <View className="mt-2 flex-row items-center justify-between gap-2">
+                    <Text className="text-[11px] text-slate-500 flex-1">
+                      Đã cố định theo đơn đã chọn — không đổi đơn / bệnh nhân / dịch vụ / hình thức thanh toán.
+                    </Text>
+                    <TouchableOpacity onPress={clearOrderSelection} className="py-1 px-2 shrink-0" activeOpacity={0.85}>
+                      <Text className="text-[12px] font-extrabold text-sky-600">Chọn lại</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Bệnh nhân</Text>
+                <TouchableOpacity
+                  disabled={isOrderSelectionLocked}
+                  className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${isOrderSelectionLocked ? "opacity-55" : ""
+                    }`}
+                  onPress={() => {
+                    if (!isOrderSelectionLocked) setActiveModal("patient");
+                  }}
+                >
+                  <Text className={selectedPatient ? "text-slate-900 font-bold" : "text-slate-400"}>
+                    {selectedPatient?.patientName || "Chọn bệnh nhân"}
+                  </Text>
+                  {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
+                </TouchableOpacity>
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Dịch vụ xét nghiệm</Text>
+                <TouchableOpacity
+                  disabled={isOrderSelectionLocked}
+                  className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${isOrderSelectionLocked ? "opacity-55" : ""
+                    }`}
+                  onPress={() => {
+                    if (!isOrderSelectionLocked) setActiveModal("test");
+                  }}
+                >
+                  <Text className={selectedGenomeTest ? "text-slate-900 font-bold" : "text-slate-400"}>
+                    {selectedGenomeTest?.testName || "Chọn dịch vụ xét nghiệm"}
+                  </Text>
+                  {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
+                </TouchableOpacity>
+
+                <View className="mt-3">
+                  <Text className="text-[12px] font-bold text-slate-600 mb-2">Giá gốc (VND)</Text>
+                  <View className="bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+                    <Text className="text-slate-800 font-bold">{orderBasePrice.toLocaleString("vi-VN")}</Text>
+                  </View>
+                </View>
+
+                <View className="mt-3">
+                  <Text className="text-[12px] font-bold text-slate-600 mb-2">Thuế VAT (%)</Text>
+                  <View className="bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+                    <Text className="text-slate-800 font-bold">{String(orderTaxRate)}</Text>
+                  </View>
+                  <Text className="text-[11px] text-slate-500 mt-1">Theo dịch vụ xét nghiệm đã chọn.</Text>
+                </View>
+
+                <View className="mt-3 bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+                  <View className="flex-row justify-between py-1">
+                    <Text className="text-slate-500 text-[12px]">Giá gốc:</Text>
+                    <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(orderBasePrice)}</Text>
+                  </View>
+                  <View className="flex-row justify-between py-1">
+                    <Text className="text-slate-500 text-[12px]">Thuế VAT ({orderTaxRate}%):</Text>
+                    <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(orderVatAmount)}</Text>
+                  </View>
+                  <View className="flex-row justify-between py-1 border-t border-slate-200 mt-1 pt-2">
+                    <Text className="text-slate-900 text-[13px] font-extrabold">Tổng cộng:</Text>
+                    <Text className="text-cyan-700 text-[13px] font-extrabold">{formatCurrency(orderTotalAmount)}</Text>
+                  </View>
+                </View>
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Hình thức thanh toán *</Text>
+                <TouchableOpacity
+                  disabled={isOrderSelectionLocked}
+                  className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${isOrderSelectionLocked ? "opacity-55" : ""
+                    }`}
+                  onPress={() => {
+                    if (!isOrderSelectionLocked) setActiveModal("payment");
+                  }}
+                >
+                  <Text className={paymentType ? "text-slate-900 font-bold" : "text-slate-400"}>
+                    {paymentType === "CASH"
+                      ? "Tiền mặt"
+                      : paymentType === "ONLINE_PAYMENT"
+                        ? "Thanh toán online"
+                        : "Chọn hình thức thanh toán"}
+                  </Text>
+                  {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
+                </TouchableOpacity>
+                {isOrderSelectionLocked && !paymentType ? (
+                  <Text className="text-[11px] text-amber-700 mt-1">
+                    Đơn chưa có hình thức thanh toán — cập nhật đơn trước hoặc chọn lại đơn khác.
+                  </Text>
+                ) : null}
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Ghi chú</Text>
+                <TextInput
+                  value={note}
+                  onChangeText={setNote}
+                  multiline
+                  placeholder="Nhập ghi chú (tuỳ chọn)"
+                  placeholderTextColor="#94a3b8"
+                  className="bg-white rounded-xl border border-slate-200 px-4 py-3 text-slate-900"
+                  style={{ minHeight: 88, textAlignVertical: "top" }}
+                />
+              </>
+            ) : (
+              <>
+                <Text className="text-[12px] font-bold text-slate-600 mb-2">Mẫu bổ sung *</Text>
+                <TouchableOpacity
+                  disabled={isSampleSelectionLocked}
+                  className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${isSampleSelectionLocked ? "opacity-55" : ""
+                    }`}
+                  onPress={() => {
+                    if (!isSampleSelectionLocked) setActiveModal("sample");
+                  }}
+                >
+                  <Text className={selectedSampleAdd ? "text-slate-900 font-bold" : "text-slate-400"}>
+                    {selectedSampleAdd?.sampleName || "Chọn mẫu bổ sung"}
+                  </Text>
+                  {!isSampleSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
+                </TouchableOpacity>
+                {isSampleSelectionLocked ? (
+                  <View className="mt-2 flex-row items-center justify-between gap-2">
+                    <Text className="text-[11px] text-slate-500 flex-1">
+                      Đã cố định theo mẫu đã chọn — không đổi mẫu khác.
+                    </Text>
+                    <TouchableOpacity onPress={clearSampleSelection} className="py-1 px-2 shrink-0" activeOpacity={0.85}>
+                      <Text className="text-[12px] font-extrabold text-sky-600">Chọn lại</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+                {unpaidSampleAdds.length === 0 ? (
+                  <Text className="text-[11px] text-slate-400 mt-1">
+                    Không có mẫu bổ sung nào chưa thanh toán
+                  </Text>
+                ) : null}
+
+                {selectedSampleAdd ? (
+                  <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
+                    <View className="flex-row justify-between py-0.5">
+                      <Text className="text-[12px] text-slate-500">Tên mẫu:</Text>
+                      <Text className="text-[12px] font-semibold text-slate-800">
+                        {selectedSampleAdd.sampleName || "—"}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between py-0.5">
+                      <Text className="text-[12px] text-slate-500">Đơn hàng:</Text>
+                      <Text className="text-[12px] font-semibold text-slate-800">
+                        {selectedSampleAdd.orderId || "—"}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between py-0.5">
+                      <Text className="text-[12px] text-slate-500">Trạng thái:</Text>
+                      <Text className="text-[12px] font-semibold text-slate-800">
+                        {selectedSampleAdd.status || "—"}
+                      </Text>
+                    </View>
+                    {selectedPatient ? (
+                      <>
+                        <View className="flex-row justify-between py-0.5">
+                          <Text className="text-[12px] text-slate-500">Bệnh nhân:</Text>
+                          <Text className="text-[12px] font-semibold text-slate-800">
+                            {selectedPatient.patientName || "—"}
+                          </Text>
+                        </View>
+                        <View className="flex-row justify-between py-0.5">
+                          <Text className="text-[12px] text-slate-500">Mã BN:</Text>
+                          <Text className="text-[12px] font-semibold text-slate-800">
+                            {selectedPatient.patientId || "—"}
+                          </Text>
+                        </View>
+                      </>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                <View className="mt-3">
+                  <Text className="text-[12px] font-bold text-slate-600 mb-2">Giá gốc (VND)</Text>
+                  <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <Text className="font-bold text-slate-800">{sampleAddBasePrice.toLocaleString("vi-VN")}</Text>
+                  </View>
+                </View>
+
+                <View className="mt-3">
+                  <Text className="text-[12px] font-bold text-slate-600 mb-2">Thuế VAT (%)</Text>
+                  <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <Text className="font-bold text-slate-800">{String(sampleAddTaxRate)}</Text>
+                  </View>
+                </View>
+
+                <View className="mt-3 bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+                  <View className="flex-row justify-between py-1">
+                    <Text className="text-slate-500 text-[12px]">Giá gốc:</Text>
+                    <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(sampleAddBasePrice)}</Text>
+                  </View>
+                  <View className="flex-row justify-between py-1">
+                    <Text className="text-slate-500 text-[12px]">Thuế VAT ({sampleAddTaxRate}%):</Text>
+                    <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(sampleAddVatAmount)}</Text>
+                  </View>
+                  <View className="flex-row justify-between py-1 border-t border-slate-200 mt-1 pt-2">
+                    <Text className="text-slate-900 text-[13px] font-extrabold">Tổng cộng:</Text>
+                    <Text className="text-cyan-700 text-[13px] font-extrabold">{formatCurrency(sampleAddFinalPrice)}</Text>
+                  </View>
+                </View>
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Hình thức thanh toán *</Text>
+                <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <Text className={paymentType ? "font-bold text-slate-900" : "font-bold text-slate-400"}>
+                    {paymentType === "CASH"
+                      ? "Tiền mặt"
+                      : paymentType === "ONLINE_PAYMENT"
+                        ? "Thanh toán online"
+                        : "Chưa có"}
+                  </Text>
+                </View>
+
+                <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Ghi chú</Text>
+                <TextInput
+                  value={note}
+                  onChangeText={setNote}
+                  multiline
+                  placeholder="Nhập ghi chú (tuỳ chọn)"
+                  placeholderTextColor="#94a3b8"
+                  className="bg-white rounded-xl border border-slate-200 px-4 py-3 text-slate-900"
+                  style={{ minHeight: 88, textAlignVertical: "top" }}
+                />
+              </>
+            )}
+          </View>
+        </View>
+
+        <View className="bg-white border border-slate-200 rounded-2xl p-4 mt-4">
+          <Text className="text-[15px] font-extrabold text-slate-900">Xem trước hoá đơn</Text>
+          <View className="bg-cyan-600 rounded-xl p-4 mt-3">
+            <Text className="text-white text-[17px] font-extrabold">HT GENETIC LAB</Text>
+            <Text className="text-cyan-100 text-[12px] mt-1">Xét nghiệm di truyền chất lượng cao</Text>
+          </View>
+
+          <View className="mt-3">
+            <Text className="text-[12px] text-slate-500">Mã hóa đơn</Text>
+            <Text className="text-[14px] font-bold text-slate-900">{previewInvoiceId}</Text>
+          </View>
+
+          <Text className="mt-4 text-[14px] font-extrabold text-slate-900">HÓA ĐƠN THANH TOÁN</Text>
+          <Text className="text-[12px] text-slate-500">Ngày: {new Date().toLocaleTimeString("vi-VN")} {new Date().toLocaleDateString("vi-VN")}</Text>
+
+          {paymentType ? (
+            <View className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
+              <Text className="text-[12px] text-blue-900">
+                <Text className="font-extrabold">Hình thức thanh toán: </Text>
+                {paymentType === "CASH" ? "Tiền mặt" : paymentType === "ONLINE_PAYMENT" ? "Thanh toán online" : ""}
+              </Text>
+            </View>
+          ) : null}
+
+          {isOrder && selectedPatient ? (
+            <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <Text className="text-[12px] font-extrabold text-slate-700 mb-2">Thông tin bệnh nhân</Text>
+              <Text className="text-[11px] text-slate-600">Họ tên: {selectedPatient.patientName || "—"}</Text>
+              <Text className="text-[11px] text-slate-600">Mã BN: {selectedPatient.patientId || "—"}</Text>
+            </View>
+          ) : null}
+
+          {!isOrder && selectedSampleAdd ? (
+            <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <Text className="text-[12px] font-extrabold text-slate-700 mb-2">Thông tin mẫu bổ sung</Text>
+              <Text className="text-[11px] text-slate-600">Tên mẫu: {selectedSampleAdd.sampleName || "—"}</Text>
+              <Text className="text-[11px] text-slate-600">Mã đơn hàng: {selectedSampleAdd.orderId || "—"}</Text>
+              {selectedPatient ? (
+                <Text className="text-[11px] text-slate-600">Bệnh nhân: {selectedPatient.patientName || "—"}</Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          <View className="mt-3 border border-slate-200 rounded-xl overflow-hidden">
+            <View className="flex-row bg-slate-100">
+              <Text className="flex-1 px-3 py-2 text-[12px] font-bold text-slate-700">Mô tả</Text>
+              <Text className="px-3 py-2 text-[12px] font-bold text-slate-700">Thành tiền</Text>
+            </View>
+            <View className="flex-row border-t border-slate-200">
+              <Text className="flex-1 px-3 py-2 text-[12px] text-slate-700">
+                {isOrder
+                  ? selectedGenomeTest?.testName || "Dịch vụ xét nghiệm"
+                  : selectedSampleAdd?.sampleName || "Mẫu bổ sung"}
+              </Text>
+              <Text className="px-3 py-2 text-[12px] text-slate-700">{formatCurrency(previewBase)}</Text>
+            </View>
+            <View className="flex-row border-t border-slate-200">
+              <Text className="flex-1 px-3 py-2 text-[12px] text-slate-700">Thuế VAT ({previewTaxPct}%)</Text>
+              <Text className="px-3 py-2 text-[12px] text-slate-700">{formatCurrency(previewVat)}</Text>
+            </View>
+            <View className="flex-row border-t border-slate-200 bg-cyan-600">
+              <Text className="flex-1 px-3 py-2 text-[12px] font-extrabold text-white">TỔNG CỘNG</Text>
+              <Text className="px-3 py-2 text-[12px] font-extrabold text-white">{formatCurrency(previewTotal)}</Text>
+            </View>
+          </View>
+
+          <View className="mt-4">
+            <Text className="text-[12px] text-slate-600 font-extrabold">HT GENETIC LAB</Text>
+            <Text className="text-[11px] text-slate-500 mt-1">
+              Địa chỉ: Tòa nhà FPT, Khu CNC Hòa Lạc, Thạch Thất, Hà Nội
+            </Text>
+            <Text className="text-[11px] text-slate-500 mt-1">
+              Hotline: 1900-xxxx | Email: support@htgenetic.io.vn
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleExportInvoice}
+          disabled={isPayNavigating}
+          className={`mt-4 rounded-xl py-3 flex-row items-center justify-center ${isPayNavigating ? "bg-cyan-400" : "bg-cyan-600"
             }`}
-            onPress={() => {
-              if (sourceType !== "SAMPLE_ADD") setSourceAndReset("SAMPLE_ADD");
-            }}
-            activeOpacity={0.85}
-          >
-            <Text
-              className={`text-center text-[13px] font-semibold ${!isOrder ? "text-white" : "text-slate-600"}`}
-            >
-              Mẫu bổ sung
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View className="mt-5 pb-3 border-b border-slate-200">
-          <Text className="text-[16px] font-semibold text-slate-700">
-            {isOrder ? "Thông tin hoá đơn" : "Hoá đơn mẫu bổ sung"}
-          </Text>
-        </View>
-
-        <View className="mt-4">
-          {isOrder ? (
-            <>
-              <Text className="text-[12px] font-bold text-slate-600 mb-2">Đơn hàng *</Text>
-              {!isOrderSelectionLocked && unpaidOrders.length === 0 ? (
-                <Text className="text-[11px] text-amber-700 font-semibold mb-2">
-                  Không có đơn chưa thanh toán — các đơn đã thanh toán sẽ không hiện ở đây.
-                </Text>
-              ) : null}
-              <TouchableOpacity
-                disabled={isOrderSelectionLocked || unpaidOrders.length === 0}
-                className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${
-                  isOrderSelectionLocked || unpaidOrders.length === 0 ? "opacity-55" : ""
-                }`}
-                onPress={() => {
-                  if (!isOrderSelectionLocked && unpaidOrders.length > 0) setActiveModal("order");
-                }}
-              >
-                <Text className={selectedOrder ? "text-slate-900 font-bold" : "text-slate-400"}>
-                  {selectedOrder?.orderName || "Chọn đơn hàng"}
-                </Text>
-                {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
-              </TouchableOpacity>
-              {isOrderSelectionLocked ? (
-                <View className="mt-2 flex-row items-center justify-between gap-2">
-                  <Text className="text-[11px] text-slate-500 flex-1">
-                    Đã cố định theo đơn đã chọn — không đổi đơn / bệnh nhân / dịch vụ / hình thức thanh toán.
-                  </Text>
-                  <TouchableOpacity onPress={clearOrderSelection} className="py-1 px-2 shrink-0" activeOpacity={0.85}>
-                    <Text className="text-[12px] font-extrabold text-sky-600">Chọn lại</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Bệnh nhân</Text>
-              <TouchableOpacity
-                disabled={isOrderSelectionLocked}
-                className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${
-                  isOrderSelectionLocked ? "opacity-55" : ""
-                }`}
-                onPress={() => {
-                  if (!isOrderSelectionLocked) setActiveModal("patient");
-                }}
-              >
-                <Text className={selectedPatient ? "text-slate-900 font-bold" : "text-slate-400"}>
-                  {selectedPatient?.patientName || "Chọn bệnh nhân"}
-                </Text>
-                {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
-              </TouchableOpacity>
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Dịch vụ xét nghiệm</Text>
-              <TouchableOpacity
-                disabled={isOrderSelectionLocked}
-                className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${
-                  isOrderSelectionLocked ? "opacity-55" : ""
-                }`}
-                onPress={() => {
-                  if (!isOrderSelectionLocked) setActiveModal("test");
-                }}
-              >
-                <Text className={selectedGenomeTest ? "text-slate-900 font-bold" : "text-slate-400"}>
-                  {selectedGenomeTest?.testName || "Chọn dịch vụ xét nghiệm"}
-                </Text>
-                {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
-              </TouchableOpacity>
-
-              <View className="mt-3">
-                <Text className="text-[12px] font-bold text-slate-600 mb-2">Giá gốc (VND)</Text>
-                <View className="bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
-                  <Text className="text-slate-800 font-bold">{orderBasePrice.toLocaleString("vi-VN")}</Text>
-                </View>
-              </View>
-
-              <View className="mt-3">
-                <Text className="text-[12px] font-bold text-slate-600 mb-2">Thuế VAT (%)</Text>
-                <View className="bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
-                  <Text className="text-slate-800 font-bold">{String(orderTaxRate)}</Text>
-                </View>
-                <Text className="text-[11px] text-slate-500 mt-1">Theo dịch vụ xét nghiệm đã chọn.</Text>
-              </View>
-
-              <View className="mt-3 bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
-                <View className="flex-row justify-between py-1">
-                  <Text className="text-slate-500 text-[12px]">Giá gốc:</Text>
-                  <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(orderBasePrice)}</Text>
-                </View>
-                <View className="flex-row justify-between py-1">
-                  <Text className="text-slate-500 text-[12px]">Thuế VAT ({orderTaxRate}%):</Text>
-                  <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(orderVatAmount)}</Text>
-                </View>
-                <View className="flex-row justify-between py-1 border-t border-slate-200 mt-1 pt-2">
-                  <Text className="text-slate-900 text-[13px] font-extrabold">Tổng cộng:</Text>
-                  <Text className="text-cyan-700 text-[13px] font-extrabold">{formatCurrency(orderTotalAmount)}</Text>
-                </View>
-              </View>
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Hình thức thanh toán *</Text>
-              <TouchableOpacity
-                disabled={isOrderSelectionLocked}
-                className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${
-                  isOrderSelectionLocked ? "opacity-55" : ""
-                }`}
-                onPress={() => {
-                  if (!isOrderSelectionLocked) setActiveModal("payment");
-                }}
-              >
-                <Text className={paymentType ? "text-slate-900 font-bold" : "text-slate-400"}>
-                  {paymentType === "CASH"
-                    ? "Tiền mặt"
-                    : paymentType === "ONLINE_PAYMENT"
-                      ? "Thanh toán online"
-                      : "Chọn hình thức thanh toán"}
-                </Text>
-                {!isOrderSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
-              </TouchableOpacity>
-              {isOrderSelectionLocked && !paymentType ? (
-                <Text className="text-[11px] text-amber-700 mt-1">
-                  Đơn chưa có hình thức thanh toán — cập nhật đơn trước hoặc chọn lại đơn khác.
-                </Text>
-              ) : null}
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Ghi chú</Text>
-              <TextInput
-                value={note}
-                onChangeText={setNote}
-                multiline
-                placeholder="Nhập ghi chú (tuỳ chọn)"
-                placeholderTextColor="#94a3b8"
-                className="bg-white rounded-xl border border-slate-200 px-4 py-3 text-slate-900"
-                style={{ minHeight: 88, textAlignVertical: "top" }}
-              />
-            </>
+        >
+          {isPayNavigating ? (
+            <ActivityIndicator color="#fff" />
           ) : (
-            <>
-              <Text className="text-[12px] font-bold text-slate-600 mb-2">Mẫu bổ sung *</Text>
-              <TouchableOpacity
-                disabled={isSampleSelectionLocked}
-                className={`bg-white rounded-xl border border-slate-200 px-4 py-3 flex-row items-center justify-between ${
-                  isSampleSelectionLocked ? "opacity-55" : ""
-                }`}
-                onPress={() => {
-                  if (!isSampleSelectionLocked) setActiveModal("sample");
-                }}
-              >
-                <Text className={selectedSampleAdd ? "text-slate-900 font-bold" : "text-slate-400"}>
-                  {selectedSampleAdd?.sampleName || "Chọn mẫu bổ sung"}
-                </Text>
-                {!isSampleSelectionLocked ? <ChevronDown size={16} color="#64748b" /> : null}
-              </TouchableOpacity>
-              {isSampleSelectionLocked ? (
-                <View className="mt-2 flex-row items-center justify-between gap-2">
-                  <Text className="text-[11px] text-slate-500 flex-1">
-                    Đã cố định theo mẫu đã chọn — không đổi mẫu khác.
-                  </Text>
-                  <TouchableOpacity onPress={clearSampleSelection} className="py-1 px-2 shrink-0" activeOpacity={0.85}>
-                    <Text className="text-[12px] font-extrabold text-sky-600">Chọn lại</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-              {unpaidSampleAdds.length === 0 ? (
-                <Text className="text-[11px] text-slate-400 mt-1">
-                  Không có mẫu bổ sung nào chưa thanh toán
-                </Text>
-              ) : null}
-
-              {selectedSampleAdd ? (
-                <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
-                  <View className="flex-row justify-between py-0.5">
-                    <Text className="text-[12px] text-slate-500">Tên mẫu:</Text>
-                    <Text className="text-[12px] font-semibold text-slate-800">
-                      {selectedSampleAdd.sampleName || "—"}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between py-0.5">
-                    <Text className="text-[12px] text-slate-500">Đơn hàng:</Text>
-                    <Text className="text-[12px] font-semibold text-slate-800">
-                      {selectedSampleAdd.orderId || "—"}
-                    </Text>
-                  </View>
-                  <View className="flex-row justify-between py-0.5">
-                    <Text className="text-[12px] text-slate-500">Trạng thái:</Text>
-                    <Text className="text-[12px] font-semibold text-slate-800">
-                      {selectedSampleAdd.status || "—"}
-                    </Text>
-                  </View>
-                  {selectedPatient ? (
-                    <>
-                      <View className="flex-row justify-between py-0.5">
-                        <Text className="text-[12px] text-slate-500">Bệnh nhân:</Text>
-                        <Text className="text-[12px] font-semibold text-slate-800">
-                          {selectedPatient.patientName || "—"}
-                        </Text>
-                      </View>
-                      <View className="flex-row justify-between py-0.5">
-                        <Text className="text-[12px] text-slate-500">Mã BN:</Text>
-                        <Text className="text-[12px] font-semibold text-slate-800">
-                          {selectedPatient.patientId || "—"}
-                        </Text>
-                      </View>
-                    </>
-                  ) : null}
-                </View>
-              ) : null}
-
-              <View className="mt-3">
-                <Text className="text-[12px] font-bold text-slate-600 mb-2">Giá gốc (VND)</Text>
-                <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <Text className="font-bold text-slate-800">{sampleAddBasePrice.toLocaleString("vi-VN")}</Text>
-                </View>
-              </View>
-
-              <View className="mt-3">
-                <Text className="text-[12px] font-bold text-slate-600 mb-2">Thuế VAT (%)</Text>
-                <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <Text className="font-bold text-slate-800">{String(sampleAddTaxRate)}</Text>
-                </View>
-              </View>
-
-              <View className="mt-3 bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
-                <View className="flex-row justify-between py-1">
-                  <Text className="text-slate-500 text-[12px]">Giá gốc:</Text>
-                  <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(sampleAddBasePrice)}</Text>
-                </View>
-                <View className="flex-row justify-between py-1">
-                  <Text className="text-slate-500 text-[12px]">Thuế VAT ({sampleAddTaxRate}%):</Text>
-                  <Text className="text-slate-800 font-bold text-[12px]">{formatCurrency(sampleAddVatAmount)}</Text>
-                </View>
-                <View className="flex-row justify-between py-1 border-t border-slate-200 mt-1 pt-2">
-                  <Text className="text-slate-900 text-[13px] font-extrabold">Tổng cộng:</Text>
-                  <Text className="text-cyan-700 text-[13px] font-extrabold">{formatCurrency(sampleAddFinalPrice)}</Text>
-                </View>
-              </View>
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Hình thức thanh toán *</Text>
-              <View className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <Text className={paymentType ? "font-bold text-slate-900" : "font-bold text-slate-400"}>
-                  {paymentType === "CASH"
-                    ? "Tiền mặt"
-                    : paymentType === "ONLINE_PAYMENT"
-                      ? "Thanh toán online"
-                      : "Chưa có"}
-                </Text>
-              </View>
-
-              <Text className="text-[12px] font-bold text-slate-600 mt-3 mb-2">Ghi chú</Text>
-              <TextInput
-                value={note}
-                onChangeText={setNote}
-                multiline
-                placeholder="Nhập ghi chú (tuỳ chọn)"
-                placeholderTextColor="#94a3b8"
-                className="bg-white rounded-xl border border-slate-200 px-4 py-3 text-slate-900"
-                style={{ minHeight: 88, textAlignVertical: "top" }}
-              />
-            </>
+            <FileDown size={16} color="#fff" />
           )}
-        </View>
-      </View>
-
-      <View className="bg-white border border-slate-200 rounded-2xl p-4 mt-4">
-        <Text className="text-[15px] font-extrabold text-slate-900">Xem trước hoá đơn</Text>
-        <View className="bg-cyan-600 rounded-xl p-4 mt-3">
-          <Text className="text-white text-[17px] font-extrabold">HT GENETIC LAB</Text>
-          <Text className="text-cyan-100 text-[12px] mt-1">Xét nghiệm di truyền chất lượng cao</Text>
-        </View>
-
-        <View className="mt-3">
-          <Text className="text-[12px] text-slate-500">Mã hóa đơn</Text>
-          <Text className="text-[14px] font-bold text-slate-900">{previewInvoiceId}</Text>
-        </View>
-
-        <Text className="mt-4 text-[14px] font-extrabold text-slate-900">HÓA ĐƠN THANH TOÁN</Text>
-        <Text className="text-[12px] text-slate-500">Ngày: {new Date().toLocaleTimeString("vi-VN")} {new Date().toLocaleDateString("vi-VN")}</Text>
-
-        {paymentType ? (
-          <View className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2">
-            <Text className="text-[12px] text-blue-900">
-              <Text className="font-extrabold">Hình thức thanh toán: </Text>
-              {paymentType === "CASH" ? "Tiền mặt" : paymentType === "ONLINE_PAYMENT" ? "Thanh toán online" : ""}
-            </Text>
-          </View>
-        ) : null}
-
-        {isOrder && selectedPatient ? (
-          <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
-            <Text className="text-[12px] font-extrabold text-slate-700 mb-2">Thông tin bệnh nhân</Text>
-            <Text className="text-[11px] text-slate-600">Họ tên: {selectedPatient.patientName || "—"}</Text>
-            <Text className="text-[11px] text-slate-600">Mã BN: {selectedPatient.patientId || "—"}</Text>
-          </View>
-        ) : null}
-
-        {!isOrder && selectedSampleAdd ? (
-          <View className="mt-3 rounded-xl bg-slate-50 border border-slate-100 p-3">
-            <Text className="text-[12px] font-extrabold text-slate-700 mb-2">Thông tin mẫu bổ sung</Text>
-            <Text className="text-[11px] text-slate-600">Tên mẫu: {selectedSampleAdd.sampleName || "—"}</Text>
-            <Text className="text-[11px] text-slate-600">Mã đơn hàng: {selectedSampleAdd.orderId || "—"}</Text>
-            {selectedPatient ? (
-              <Text className="text-[11px] text-slate-600">Bệnh nhân: {selectedPatient.patientName || "—"}</Text>
-            ) : null}
-          </View>
-        ) : null}
-
-        <View className="mt-3 border border-slate-200 rounded-xl overflow-hidden">
-          <View className="flex-row bg-slate-100">
-            <Text className="flex-1 px-3 py-2 text-[12px] font-bold text-slate-700">Mô tả</Text>
-            <Text className="px-3 py-2 text-[12px] font-bold text-slate-700">Thành tiền</Text>
-          </View>
-          <View className="flex-row border-t border-slate-200">
-            <Text className="flex-1 px-3 py-2 text-[12px] text-slate-700">
-              {isOrder
-                ? selectedGenomeTest?.testName || "Dịch vụ xét nghiệm"
-                : selectedSampleAdd?.sampleName || "Mẫu bổ sung"}
-            </Text>
-            <Text className="px-3 py-2 text-[12px] text-slate-700">{formatCurrency(previewBase)}</Text>
-          </View>
-          <View className="flex-row border-t border-slate-200">
-            <Text className="flex-1 px-3 py-2 text-[12px] text-slate-700">Thuế VAT ({previewTaxPct}%)</Text>
-            <Text className="px-3 py-2 text-[12px] text-slate-700">{formatCurrency(previewVat)}</Text>
-          </View>
-          <View className="flex-row border-t border-slate-200 bg-cyan-600">
-            <Text className="flex-1 px-3 py-2 text-[12px] font-extrabold text-white">TỔNG CỘNG</Text>
-            <Text className="px-3 py-2 text-[12px] font-extrabold text-white">{formatCurrency(previewTotal)}</Text>
-          </View>
-        </View>
-
-        <View className="mt-4">
-          <Text className="text-[12px] text-slate-600 font-extrabold">HT GENETIC LAB</Text>
-          <Text className="text-[11px] text-slate-500 mt-1">
-            Địa chỉ: Tòa nhà FPT, Khu CNC Hòa Lạc, Thạch Thất, Hà Nội
+          <Text className="ml-2 text-white text-[14px] font-extrabold">
+            {paymentType === "ONLINE_PAYMENT"
+              ? "Tiến hành thanh toán online"
+              : isOrder
+                ? "Xuất hoá đơn"
+                : "Xuất hoá đơn mẫu bổ sung"}
           </Text>
-          <Text className="text-[11px] text-slate-500 mt-1">
-            Hotline: 1900-xxxx | Email: support@htgenetic.io.vn
-          </Text>
-        </View>
-      </View>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={handleExportInvoice}
-        disabled={isPayNavigating}
-        className={`mt-4 rounded-xl py-3 flex-row items-center justify-center ${
-          isPayNavigating ? "bg-cyan-400" : "bg-cyan-600"
-        }`}
-      >
-        {isPayNavigating ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <FileDown size={16} color="#fff" />
-        )}
-        <Text className="ml-2 text-white text-[14px] font-extrabold">
-          {paymentType === "ONLINE_PAYMENT"
-            ? "Tiến hành thanh toán online"
-            : isOrder
-              ? "Xuất hoá đơn"
-              : "Xuất hoá đơn mẫu bổ sung"}
-        </Text>
-      </TouchableOpacity>
-
-      <SelectionModal
-        visible={activeModal === "order"}
-        title="Chọn đơn hàng"
-        options={orderOptions}
-        selectedValue={selectedOrderId}
-        onSelect={handleSelectOrder}
-        onClose={() => setActiveModal("")}
-      />
-      <SelectionModal
-        visible={activeModal === "sample"}
-        title="Chọn mẫu bổ sung"
-        options={sampleOptions}
-        selectedValue={selectedSampleAddId}
-        onSelect={handleSelectSampleAdd}
-        onClose={() => setActiveModal("")}
-      />
-      <SelectionModal
-        visible={activeModal === "patient"}
-        title="Chọn bệnh nhân"
-        options={patientOptions}
-        selectedValue={selectedPatientId}
-        onSelect={setSelectedPatientId}
-        onClose={() => setActiveModal("")}
-      />
-      <SelectionModal
-        visible={activeModal === "test"}
-        title="Chọn dịch vụ xét nghiệm"
-        options={genomeTestOptions}
-        selectedValue={selectedGenomeTestId}
-        onSelect={setSelectedGenomeTestId}
-        onClose={() => setActiveModal("")}
-      />
-      <SelectionModal
-        visible={activeModal === "payment"}
-        title="Chọn hình thức thanh toán"
-        options={paymentTypeOptions}
-        selectedValue={paymentType}
-        onSelect={(v) => {
-          if (!isOrderSelectionLocked) setPaymentType(v as PaymentType);
-        }}
-        onClose={() => setActiveModal("")}
-      />
+        <SelectionModal
+          visible={activeModal === "order"}
+          title="Chọn đơn hàng"
+          options={orderOptions}
+          selectedValue={selectedOrderId}
+          onSelect={handleSelectOrder}
+          onClose={() => setActiveModal("")}
+        />
+        <SelectionModal
+          visible={activeModal === "sample"}
+          title="Chọn mẫu bổ sung"
+          options={sampleOptions}
+          selectedValue={selectedSampleAddId}
+          onSelect={handleSelectSampleAdd}
+          onClose={() => setActiveModal("")}
+        />
+        <SelectionModal
+          visible={activeModal === "patient"}
+          title="Chọn bệnh nhân"
+          options={patientOptions}
+          selectedValue={selectedPatientId}
+          onSelect={setSelectedPatientId}
+          onClose={() => setActiveModal("")}
+        />
+        <SelectionModal
+          visible={activeModal === "test"}
+          title="Chọn dịch vụ xét nghiệm"
+          options={genomeTestOptions}
+          selectedValue={selectedGenomeTestId}
+          onSelect={setSelectedGenomeTestId}
+          onClose={() => setActiveModal("")}
+        />
+        <SelectionModal
+          visible={activeModal === "payment"}
+          title="Chọn hình thức thanh toán"
+          options={paymentTypeOptions}
+          selectedValue={paymentType}
+          onSelect={(v) => {
+            if (!isOrderSelectionLocked) setPaymentType(v as PaymentType);
+          }}
+          onClose={() => setActiveModal("")}
+        />
       </ScrollView>
     </>
   );

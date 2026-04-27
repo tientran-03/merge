@@ -12,7 +12,7 @@ type MinioFastqcResponse = {
   error?: string;
 };
 
-/** Giống web `patient-metadata-list` — GET MinIO analysis API */
+
 export function buildMinioFastqListUrl(hospitalName: string, labcode: string): string {
   return (
     `${MINIO_API_BASE}/fastq?` +

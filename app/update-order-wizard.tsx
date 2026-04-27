@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import * as Linking from 'expo-linking';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Check } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
-import * as Linking from 'expo-linking';
 import {
   ActivityIndicator,
   Alert,
@@ -31,43 +31,42 @@ import {
 import { SelectionModal, type SelectionOption } from '@/components/modals/SelectionModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  createOrderDefaultValues,
-  createOrderSchema,
-  GENDER_OPTIONS,
-  EMBRYO_COUNT_OPTIONS,
-  PAYMENT_TYPE_OPTIONS,
-  PAYMENT_STATUS_OPTIONS,
-  SERVICE_TYPE_OPTIONS,
-  type CreateOrderFormData,
-} from '@/lib/schemas/order-schemas';
-import { getBarcodeStringFromOrder } from '@/utils/order-barcode';
-import { formatVndAmountFromNumber, parseVndAmountInput } from '@/utils/money';
-import { isLabPosition, isStaffAnalystWebRule, isStaffPosition } from '@/utils/hospital-staff-position';
-import {
   getOrderStatusBadge,
   ORDER_STATUS_DEFAULT,
   orderStatusForUpdatePayload,
 } from '@/lib/constants/order-status';
 import { getPaymentStatusBadge } from '@/lib/constants/payment-status';
-import { OrderStatus } from '@/types';
+import {
+  createOrderDefaultValues,
+  createOrderSchema,
+  EMBRYO_COUNT_OPTIONS,
+  GENDER_OPTIONS,
+  PAYMENT_STATUS_OPTIONS,
+  PAYMENT_TYPE_OPTIONS,
+  SERVICE_TYPE_OPTIONS,
+  type CreateOrderFormData,
+} from '@/lib/schemas/order-schemas';
+import { getApiResponseData } from '@/lib/types/api-types';
 import { BarcodeResponse, barcodeService } from '@/services/barcodeService';
+import { diseaseService } from '@/services/diseaseService';
 import { DoctorResponse, doctorService } from '@/services/doctorService';
+import { embryoService } from '@/services/embryoService';
 import { GenomeTestResponse, genomeTestService } from '@/services/genomeTestService';
 import { HospitalStaffResponse, hospitalStaffService } from '@/services/hospitalStaffService';
-import { getApiResponseData } from '@/lib/types/api-types';
 import { OrderResponse, orderService, pickOrderSampleCollector } from '@/services/orderService';
 import { patientClinicalService } from '@/services/patientClinicalService';
 import { patientService } from '@/services/patientService';
+import { reproductionService } from '@/services/reproductionService';
 import { ServiceResponse, serviceService } from '@/services/serviceService';
 import {
-  type SpecifyVoteTestResponse,
   specifyVoteTestService,
+  type SpecifyVoteTestResponse,
 } from '@/services/specifyVoteTestService';
-import { reproductionService } from '@/services/reproductionService';
-import { embryoService } from '@/services/embryoService';
-import { diseaseService } from '@/services/diseaseService';
 import { uploadFileToCloudinary, uploadImageToCloudinary } from '@/utils/cloudinary';
 import { ensurePatientMetadataForOrder } from '@/utils/ensurePatientMetadataForOrder';
+import { isLabPosition, isStaffAnalystWebRule, isStaffPosition } from '@/utils/hospital-staff-position';
+import { formatVndAmountFromNumber, parseVndAmountInput } from '@/utils/money';
+import { getBarcodeStringFromOrder } from '@/utils/order-barcode';
 
 const TOTAL_STEPS = 6;
 /** Giống `create-order.tsx` — cùng thứ tự 6 bước */
@@ -1600,7 +1599,7 @@ export default function UpdateOrderWizardScreen() {
       return false;
     }
 
-    // Giống web admin: bệnh nhân phải thuộc đúng BV/phòng khám của bác sĩ chỉ định.
+
     const patientId = String(methods.getValues('step2.patientId') ?? '').trim();
     if (patientId && step1Hospital) {
       try {
@@ -1943,13 +1942,13 @@ export default function UpdateOrderWizardScreen() {
           // Kiểm tra xem đã có patient clinical chưa
           const clinicalExisting = await patientClinicalService.getByPatientId(patientId);
           let clinicalId: string | undefined = undefined;
-          
+
           if (clinicalExisting.success && clinicalExisting.data) {
             // Thử lấy ID từ nhiều field có thể có
             const data = clinicalExisting.data as any;
             clinicalId = data?.patientClinicalId || data?.id;
           }
-          
+
           // Nếu có ID hợp lệ, update
           if (clinicalId && clinicalId !== 'undefined' && clinicalId.trim()) {
             const upd = await patientClinicalService.update(clinicalId, clinicalPayload);
@@ -2220,7 +2219,7 @@ export default function UpdateOrderWizardScreen() {
 
       console.log('[UpdateOrderWizard] Final payload:', JSON.stringify(payload, null, 2));
       console.log('[UpdateOrderWizard] Calling mutation...');
-      
+
       const result = await updateOrderMutation.mutateAsync(payload);
       console.log('[UpdateOrderWizard] Mutation success:', result);
 
@@ -2237,13 +2236,13 @@ export default function UpdateOrderWizardScreen() {
       } catch (e) {
         console.warn('[UpdateOrderWizard] ensurePatientMetadataForOrder failed:', e);
       }
-      
+
       // Sau khi lưu thành công, tự động quay về trang đơn hàng chờ cập nhật sau 0.5 giây
       // Clear timeout cũ nếu có
       if (navigateTimeoutRef.current) {
         clearTimeout(navigateTimeoutRef.current);
       }
-      
+
       // Tự động quay về sau 0.5 giây
       navigateTimeoutRef.current = setTimeout(() => {
         console.log('[UpdateOrderWizard] Navigating after save:', targetAfterSave);
@@ -2372,9 +2371,8 @@ export default function UpdateOrderWizardScreen() {
               <TouchableOpacity
                 onPress={handlePickInvoiceFile}
                 disabled={isUploadingInvoiceFile}
-                className={`px-4 py-3 rounded-xl ${
-                  isUploadingInvoiceFile ? 'bg-slate-200' : 'bg-emerald-50 border border-emerald-200'
-                }`}
+                className={`px-4 py-3 rounded-xl ${isUploadingInvoiceFile ? 'bg-slate-200' : 'bg-emerald-50 border border-emerald-200'
+                  }`}
                 activeOpacity={0.8}
               >
                 {isUploadingInvoiceFile ? (
@@ -2445,9 +2443,8 @@ export default function UpdateOrderWizardScreen() {
         </FormInfoBox>
         <Text className="text-[13px] font-extrabold text-slate-700 mb-2 mt-1">Mã phiếu xét nghiệm</Text>
         <TouchableOpacity
-          className={`h-12 rounded-2xl border px-3 flex-row items-center justify-between mb-4 ${
-            orderSpecifyLocked ? 'border-slate-200 bg-slate-100' : 'border-sky-100 bg-slate-50'
-          }`}
+          className={`h-12 rounded-2xl border px-3 flex-row items-center justify-between mb-4 ${orderSpecifyLocked ? 'border-slate-200 bg-slate-100' : 'border-sky-100 bg-slate-50'
+            }`}
           onPress={() => {
             if (!orderSpecifyLocked) setShowSpecifyIdModal(true);
           }}
@@ -2691,9 +2688,8 @@ export default function UpdateOrderWizardScreen() {
                 <TouchableOpacity
                   onPress={pickStep3DiagnoseImageFromLibrary}
                   disabled={uploadingStep3DiagnoseImage}
-                  className={`px-4 py-2.5 rounded-xl border ${
-                    uploadingStep3DiagnoseImage ? 'bg-slate-200 border-slate-200' : 'bg-sky-600 border-sky-600'
-                  }`}
+                  className={`px-4 py-2.5 rounded-xl border ${uploadingStep3DiagnoseImage ? 'bg-slate-200 border-slate-200' : 'bg-sky-600 border-sky-600'
+                    }`}
                   activeOpacity={0.85}
                 >
                   {uploadingStep3DiagnoseImage ? (
@@ -2705,15 +2701,13 @@ export default function UpdateOrderWizardScreen() {
                 <TouchableOpacity
                   onPress={pickStep3DiagnoseImageFromCamera}
                   disabled={uploadingStep3DiagnoseImage}
-                  className={`px-4 py-2.5 rounded-xl border ${
-                    uploadingStep3DiagnoseImage ? 'bg-slate-100 border-slate-200' : 'bg-white border-sky-300'
-                  }`}
+                  className={`px-4 py-2.5 rounded-xl border ${uploadingStep3DiagnoseImage ? 'bg-slate-100 border-slate-200' : 'bg-white border-sky-300'
+                    }`}
                   activeOpacity={0.85}
                 >
                   <Text
-                    className={`text-xs font-extrabold ${
-                      uploadingStep3DiagnoseImage ? 'text-slate-400' : 'text-sky-700'
-                    }`}
+                    className={`text-xs font-extrabold ${uploadingStep3DiagnoseImage ? 'text-slate-400' : 'text-sky-700'
+                      }`}
                   >
                     Chụp ảnh
                   </Text>
@@ -2843,13 +2837,12 @@ export default function UpdateOrderWizardScreen() {
             getLabel={t => t.testName}
             getValue={t => t.testId}
             placeholder="Lựa chọn"
-            modalTitle={`Chọn xét nghiệm${
-              serviceType && filteredGenomeTests.length > 0
+            modalTitle={`Chọn xét nghiệm${serviceType && filteredGenomeTests.length > 0
                 ? ` (${filteredGenomeTests.length} xét nghiệm)`
                 : genomeTests.length > 0
                   ? ` (${genomeTests.length} xét nghiệm)`
                   : ''
-            }`}
+              }`}
           />
         </View>
 
@@ -3059,26 +3052,23 @@ export default function UpdateOrderWizardScreen() {
                   onPress={() => {
                     void handleStepChipPress(stepNum);
                   }}
-                  className={`flex-row items-center px-3 py-2 rounded-full border ${
-                    isActive
+                  className={`flex-row items-center px-3 py-2 rounded-full border ${isActive
                       ? 'bg-cyan-600 border-sky-700'
                       : isDone
                         ? 'bg-emerald-500 border-emerald-500'
                         : 'bg-white border-slate-200'
-                  }`}
+                    }`}
                 >
                   <View
-                    className={`w-5 h-5 rounded-full items-center justify-center ${
-                      isActive ? 'bg-white/20' : isDone ? 'bg-white/20' : 'bg-slate-100'
-                    }`}
+                    className={`w-5 h-5 rounded-full items-center justify-center ${isActive ? 'bg-white/20' : isDone ? 'bg-white/20' : 'bg-slate-100'
+                      }`}
                   >
                     {isDone ? (
                       <Check size={12} color="#fff" strokeWidth={3} />
                     ) : (
                       <Text
-                        className={`text-[11px] font-extrabold ${
-                          isActive ? 'text-white' : 'text-slate-600'
-                        }`}
+                        className={`text-[11px] font-extrabold ${isActive ? 'text-white' : 'text-slate-600'
+                          }`}
                       >
                         {stepNum}
                       </Text>
@@ -3086,9 +3076,8 @@ export default function UpdateOrderWizardScreen() {
                   </View>
 
                   <Text
-                    className={`ml-2 text-[11px] font-extrabold ${
-                      isActive || isDone ? 'text-white' : 'text-slate-600'
-                    }`}
+                    className={`ml-2 text-[11px] font-extrabold ${isActive || isDone ? 'text-white' : 'text-slate-600'
+                      }`}
                     numberOfLines={1}
                   >
                     {`B${stepNum}`}
@@ -3099,10 +3088,10 @@ export default function UpdateOrderWizardScreen() {
           </ScrollView>
         </View>
 
-        <ScrollView 
-          className="flex-1" 
-          contentContainerStyle={{ 
-            padding: 16, 
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            padding: 16,
             paddingBottom: showFooter ? (Platform.OS === 'android' ? 100 : 120) : 16
           }}
           showsVerticalScrollIndicator={false}
@@ -3113,9 +3102,9 @@ export default function UpdateOrderWizardScreen() {
         </ScrollView>
 
         {showFooter && (
-          <View 
+          <View
             className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200"
-            style={{ 
+            style={{
               paddingBottom: Platform.OS === 'android' ? 8 : 20,
               paddingTop: 16,
               paddingHorizontal: 16,
@@ -3139,9 +3128,8 @@ export default function UpdateOrderWizardScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className={`flex-1 h-12 rounded-2xl items-center justify-center ${
-                  updateOrderMutation.isPending ? 'bg-cyan-400' : 'bg-cyan-600'
-                }`}
+                className={`flex-1 h-12 rounded-2xl items-center justify-center ${updateOrderMutation.isPending ? 'bg-cyan-400' : 'bg-cyan-600'
+                  }`}
                 onPress={async () => {
                   try {
                     await handleNext();

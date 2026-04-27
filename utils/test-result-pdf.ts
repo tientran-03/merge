@@ -7,7 +7,7 @@ import type { OrderResponse } from "@/services/orderService";
 import type { PatientMetadataResponse } from "@/services/patientMetadataService";
 import { specifyVoteTestService } from "@/services/specifyVoteTestService";
 
-/** Giống web `use-result-actions.ts` — MinIO analysis API */
+
 export const MINIO_API_BASE = "https://api.htgen.io.vn/api/minio";
 
 export type MinioDownloadContext = {
@@ -25,7 +25,7 @@ export function isMinioStoredMarker(s: string): boolean {
   return String(s || "").trim().toLowerCase() === "minio";
 }
 
-/** Query giống web `fetchPdfFromMinio` */
+
 export function buildMinioDownloadReportUrl(
   meta: Pick<PatientMetadataResponse, "labcode" | "patientName">,
   ctx: MinioDownloadContext

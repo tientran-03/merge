@@ -3,16 +3,16 @@ import * as DocumentPicker from "expo-document-picker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
-  ExternalLink,
+  CheckCircle2,
   Download,
+  ExternalLink,
   FileText,
   FlaskConical,
+  Folder,
+  RotateCcw,
   Search,
   Send,
   X,
-  CheckCircle2,
-  RotateCcw,
-  Folder,
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -42,8 +42,8 @@ import { hospitalStaffService } from "@/services/hospitalStaffService";
 import { notificationService } from "@/services/notificationService";
 import { OrderResponse, orderService } from "@/services/orderService";
 import {
-  patientMetadataService,
   PatientMetadataResponse,
+  patientMetadataService,
 } from "@/services/patientMetadataService";
 import { specifyVoteTestService } from "@/services/specifyVoteTestService";
 import { resolvePickerOriginalFileName } from "@/utils/document-picker-filename";
@@ -53,14 +53,14 @@ import {
   viewTestResultPdfInBrowser,
 } from "@/utils/test-result-pdf";
 
-/** Khớp web `folder-upload-modal` — tên file không đuôi (= labcode), vd LC001.pdf */
+
 const getFileNameWithoutExt = (name: string): string => {
   const n = name.trim();
   const lastDot = n.lastIndexOf(".");
   return lastDot > 0 ? n.substring(0, lastDot) : n;
 };
 
-/** Cùng tập trạng thái đơn như web `patient-result-list` (htgen_fe) */
+
 const RESULT_PHASE_ORDER_STATUSES = [
   "completed",
   "awaiting_results_approval",
@@ -173,7 +173,7 @@ const formatDateVi = (dateString?: string): string => {
 const testNameFromOrder = (o: OrderResponse) =>
   String((o.specifyId?.genomeTest as { testName?: string } | undefined)?.testName || "").trim();
 
-/** Giống web `approve-result-modal` — upload PDF lên MinIO */
+
 const MINIO_UPLOAD_REPORT_URL = "https://api.htgen.io.vn/api/minio/upload-report";
 
 type PickedReportFile = { uri: string; name: string; mimeType?: string };
@@ -255,7 +255,7 @@ export default function AdminTestResultsScreen() {
     return labMetaResponse.data;
   }, [labMetaResponse]);
 
-  /** Khớp web `folder-upload-modal`: tên file (không đuôi) === labcode */
+
   const bulkPdfMatchRows = useMemo(() => {
     if (labRows.length === 0) return [];
     return labRows.map((m) => {
@@ -355,7 +355,7 @@ export default function AdminTestResultsScreen() {
     },
   });
 
-  /** Giống web `handleApproveComplete` / bước tự động sau upload folder — đơn + phiếu «đã duyệt kết quả» + resultDate */
+
   const finalizeResultsApprovedForOrder = async (order: OrderResponse) => {
     const specifyId = order.specifyId?.specifyVoteID;
     const r1 = await orderService.updateStatus(order.orderId, "results_approved");
@@ -368,7 +368,7 @@ export default function AdminTestResultsScreen() {
     if (!r3.success) throw new Error(r3.error || "Không cập nhật được ngày trả kết quả");
   };
 
-  /** Giống web `folder-upload-modal` / `approve-result-modal` — gửi NV (staffId) khi duyệt KQ hoàn tất */
+
   const notifyStaffAllResultsCompleted = async (order: OrderResponse) => {
     const staffId = String(order.staffId || "").trim();
     if (!staffId || !user?.id) return;
@@ -477,7 +477,7 @@ export default function AdminTestResultsScreen() {
     Alert.alert(
       "Chạy lại mẫu",
       `Xác nhận yêu cầu chạy lại mẫu cho đơn ${order.orderId}?\n\n` +
-        "Tất cả mẫu trên phiếu chuyển «Mẫu chạy lại», đơn và phiếu chuyển «Chạy lại xét nghiệm», và hệ thống gửi thông báo cho người thu mẫu (giống web).",
+      "Tất cả mẫu trên phiếu chuyển «Mẫu chạy lại», đơn và phiếu chuyển «Chạy lại xét nghiệm», và hệ thống gửi thông báo cho người thu mẫu (giống web).",
       [
         { text: "Huỷ", style: "cancel" },
         {
@@ -570,8 +570,8 @@ export default function AdminTestResultsScreen() {
           Alert.alert(
             "Chưa đủ PDF theo từng labcode",
             `Giống web: cần upload file PDF cho mọi mã mẫu (tên file = labcode.pdf, ví dụ hai mã thì hai file trong cùng folder khi upload hàng loạt).\n\n` +
-              `Hãy bấm lại «Duyệt kết quả xét nghiệm» để upload folder PDF.\n\n` +
-              `Chưa có kết quả trên hệ thống (${missing.length}): ${codes.join(", ")}${extra}`,
+            `Hãy bấm lại «Duyệt kết quả xét nghiệm» để upload folder PDF.\n\n` +
+            `Chưa có kết quả trên hệ thống (${missing.length}): ${codes.join(", ")}${extra}`,
           );
           return;
         }

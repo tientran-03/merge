@@ -69,7 +69,7 @@ export async function ensurePatientMetadataForOrder(
     return;
   }
 
-  /** Giống web invoice: một `createWithAnalyze` cho mỗi phần tử `genomeTest.testSample`. */
+  
   let sampleNames: string[] =
     Array.isArray(genomeTest?.testSample) && genomeTest.testSample.length > 0
       ? genomeTest.testSample.map((s) => String(s).trim()).filter(Boolean)

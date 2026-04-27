@@ -2,21 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import {
   ArrowLeft,
-  DollarSign,
-  Building2,
-  Package,
   BarChart3,
+  Building2,
   Calendar,
+  DollarSign,
+  Package,
 } from "lucide-react-native";
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  StatusBar,
   RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -155,19 +155,17 @@ export default function AdminStatisticsScreen() {
           <View className="flex-row gap-2">
             <TouchableOpacity
               onPress={() => setActiveTab("revenue")}
-              className={`px-4 py-2 rounded-xl border ${
-                activeTab === "revenue"
+              className={`px-4 py-2 rounded-xl border ${activeTab === "revenue"
                   ? "bg-sky-600 border-sky-600"
                   : "bg-white border-sky-200"
-              }`}
+                }`}
               activeOpacity={0.85}
             >
               <View className="flex-row items-center gap-2">
                 <DollarSign size={16} color={activeTab === "revenue" ? "#fff" : "#64748b"} />
                 <Text
-                  className={`text-xs font-bold ${
-                    activeTab === "revenue" ? "text-white" : "text-slate-600"
-                  }`}
+                  className={`text-xs font-bold ${activeTab === "revenue" ? "text-white" : "text-slate-600"
+                    }`}
                 >
                   Doanh thu
                 </Text>
@@ -175,19 +173,17 @@ export default function AdminStatisticsScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setActiveTab("services")}
-              className={`px-4 py-2 rounded-xl border ${
-                activeTab === "services"
+              className={`px-4 py-2 rounded-xl border ${activeTab === "services"
                   ? "bg-sky-600 border-sky-600"
                   : "bg-white border-sky-200"
-              }`}
+                }`}
               activeOpacity={0.85}
             >
               <View className="flex-row items-center gap-2">
                 <Package size={16} color={activeTab === "services" ? "#fff" : "#64748b"} />
                 <Text
-                  className={`text-xs font-bold ${
-                    activeTab === "services" ? "text-white" : "text-slate-600"
-                  }`}
+                  className={`text-xs font-bold ${activeTab === "services" ? "text-white" : "text-slate-600"
+                    }`}
                 >
                   Dịch vụ
                 </Text>
@@ -195,19 +191,17 @@ export default function AdminStatisticsScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setActiveTab("hospitals")}
-              className={`px-4 py-2 rounded-xl border ${
-                activeTab === "hospitals"
+              className={`px-4 py-2 rounded-xl border ${activeTab === "hospitals"
                   ? "bg-sky-600 border-sky-600"
                   : "bg-white border-sky-200"
-              }`}
+                }`}
               activeOpacity={0.85}
             >
               <View className="flex-row items-center gap-2">
                 <Building2 size={16} color={activeTab === "hospitals" ? "#fff" : "#64748b"} />
                 <Text
-                  className={`text-xs font-bold ${
-                    activeTab === "hospitals" ? "text-white" : "text-slate-600"
-                  }`}
+                  className={`text-xs font-bold ${activeTab === "hospitals" ? "text-white" : "text-slate-600"
+                    }`}
                 >
                   Bệnh viện
                 </Text>
@@ -229,17 +223,15 @@ export default function AdminStatisticsScreen() {
                   <TouchableOpacity
                     key={year}
                     onPress={() => setSelectedYear(year)}
-                    className={`px-3 py-1.5 rounded-full border ${
-                      selectedYear === year
+                    className={`px-3 py-1.5 rounded-full border ${selectedYear === year
                         ? "bg-sky-600 border-sky-600"
                         : "bg-white border-sky-200"
-                    }`}
+                      }`}
                     activeOpacity={0.85}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        selectedYear === year ? "text-white" : "text-slate-600"
-                      }`}
+                      className={`text-xs font-bold ${selectedYear === year ? "text-white" : "text-slate-600"
+                        }`}
                     >
                       {year}
                     </Text>
@@ -326,11 +318,11 @@ function RevenueTab({
   const osc = data.orderStatusCount;
   const orderStatusRows: { status: string; count: number }[] = osc
     ? [
-        { status: "Hoàn thành", count: statNum(osc.completedCount) },
-        { status: "Từ chối / Hủy", count: statNum(osc.rejectedCount) },
-        { status: "Đang xử lý", count: statNum(osc.pendingCount) },
-        { status: "Tổng đơn", count: statNum(osc.totalCount) },
-      ]
+      { status: "Hoàn thành", count: statNum(osc.completedCount) },
+      { status: "Từ chối / Hủy", count: statNum(osc.rejectedCount) },
+      { status: "Đang xử lý", count: statNum(osc.pendingCount) },
+      { status: "Tổng đơn", count: statNum(osc.totalCount) },
+    ]
     : Array.isArray(data.orderStatusCounts)
       ? data.orderStatusCounts
       : [];
@@ -426,7 +418,7 @@ function RevenueTab({
           Lịch sử thanh toán (mẫu {paymentHistory.length} gần nhất)
         </Text>
         <Text className="text-xs text-slate-500 mb-3">
-          Trên web có bảng đầy đủ + phân trang; app hiển thị rút gọn cùng nguồn API.
+
         </Text>
         {paymentHistory.length === 0 ? (
           <Text className="text-xs text-slate-500 text-center py-3">Chưa có giao dịch</Text>

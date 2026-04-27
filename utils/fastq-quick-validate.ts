@@ -65,9 +65,7 @@ function formatBytes(bytes: number): string {
   return (bytes / Math.pow(1024, i)).toFixed(1) + " " + sizes[i];
 }
 
-/**
- * Giống web `fastqApi.quickValidate` — truyền object có `name` và `size` (expo File hoặc browser File).
- */
+
 export function quickValidateFastqPair(
   fastq1: FastqFileLike,
   fastq2: FastqFileLike,

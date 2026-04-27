@@ -16,8 +16,8 @@ import {
 } from "react-native";
 
 import {
-  sampleAddServiceConfigService,
   SampleAddServiceConfigResponse,
+  sampleAddServiceConfigService,
 } from "@/services/sampleAddServiceConfigService";
 import { clampDecimalStringToMax } from "@/utils/numericClamp";
 
@@ -292,7 +292,7 @@ export function SampleAddServicesPanel() {
               {searchQuery.trim() ? "Không có bản ghi phù hợp" : "Chưa có dịch vụ thêm mẫu"}
             </Text>
             <Text className="mt-2 text-xs text-slate-500 text-center px-6">
-              Thêm cấu hình giá giống trang quản trị trên web.
+
             </Text>
           </View>
         ) : (
@@ -361,9 +361,8 @@ export function SampleAddServicesPanel() {
 
               <Text className="text-xs font-bold text-slate-700 mb-2">Tên mẫu *</Text>
               <TextInput
-                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${
-                  fieldErrors.name ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
-                }`}
+                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${fieldErrors.name ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
+                  }`}
                 placeholder="VD: Mẫu máu bổ sung"
                 placeholderTextColor="#94A3B8"
                 value={name}
@@ -380,9 +379,8 @@ export function SampleAddServicesPanel() {
 
               <Text className="text-xs font-bold text-slate-700 mb-2">Giá (VNĐ) *</Text>
               <TextInput
-                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${
-                  fieldErrors.price ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
-                }`}
+                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${fieldErrors.price ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
+                  }`}
                 placeholder="VD: 500.000"
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
@@ -400,9 +398,8 @@ export function SampleAddServicesPanel() {
 
               <Text className="text-xs font-bold text-slate-700 mb-2">Thuế suất (%)</Text>
               <TextInput
-                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${
-                  fieldErrors.tax ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
-                }`}
+                className={`h-11 rounded-xl px-3 border text-sm text-slate-900 font-semibold mb-1 ${fieldErrors.tax ? "bg-red-50 border-red-300" : "bg-slate-50 border-slate-200"
+                  }`}
                 placeholder="Để trống = mặc định"
                 placeholderTextColor="#94A3B8"
                 keyboardType="decimal-pad"

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -30,22 +30,20 @@ import {
   FormTextarea,
 } from "@/components/form";
 import { useAuth } from "@/contexts/AuthContext";
+import { setListFreshOnNextFocus } from "@/lib/list-navigation-flags";
 import { GENDER_OPTIONS, SERVICE_TYPE_MAPPER } from "@/lib/schemas/order-schemas";
+import { getApiResponseData } from "@/lib/types/api-types";
 import {
-  formatPatientAddressLine,
   getProvinceSelectOptions,
   loadWardSelectOptions,
   mergeWardSelectOptions,
   parseStoredPatientAddress,
   resolveProvinceIndexKey,
   resolveWardValueFromParsed,
-  wardLabelFromValue,
-  type AddressSelectOption,
+  type AddressSelectOption
 } from "@/lib/vn-address";
-import { setListFreshOnNextFocus } from "@/lib/list-navigation-flags";
-import { getApiResponseData } from "@/lib/types/api-types";
-import { doctorService } from "@/services/doctorService";
 import { diseaseService } from "@/services/diseaseService";
+import { doctorService } from "@/services/doctorService";
 import { embryoService } from "@/services/embryoService";
 import { genomeTestService } from "@/services/genomeTestService";
 import {
@@ -136,10 +134,10 @@ const SPECIFY_FORM_STEP_COUNT = SPECIFY_FORM_STEPS.length;
 
 const formatPhoneInput = (raw: string) => raw.replace(/[^\d]/g, "").slice(0, 10);
 
-/** Khớp web specify PatientInfoSection: không nhập số trong họ tên */
+
 const formatPatientNameInput = (raw: string) => raw.replace(/\d/g, "");
 
-/** Số phôi tạo — khớp web (EmbryoGroupSection): 1 / 2 / 3 */
+
 const EMBRYO_CREATE_OPTIONS = [
   { value: "1", label: "1" },
   { value: "2", label: "2" },
@@ -355,19 +353,19 @@ const formSchema = z
 
     const clinicalRequired: Array<{
       field:
-        | "patientHeight"
-        | "patientWeight"
-        | "patientHistory"
-        | "acuteDisease"
-        | "medicalUsing";
+      | "patientHeight"
+      | "patientWeight"
+      | "patientHistory"
+      | "acuteDisease"
+      | "medicalUsing";
       message: string;
     }> = [
-      { field: "patientHeight", message: "Vui lòng nhập chiều cao bệnh nhân" },
-      { field: "patientWeight", message: "Vui lòng nhập cân nặng bệnh nhân" },
-      { field: "patientHistory", message: "Vui lòng nhập tiền sử bệnh nhân" },
-      { field: "acuteDisease", message: "Vui lòng nhập bệnh lý cấp tính" },
-      { field: "medicalUsing", message: "Vui lòng nhập thuốc đang dùng" },
-    ];
+        { field: "patientHeight", message: "Vui lòng nhập chiều cao bệnh nhân" },
+        { field: "patientWeight", message: "Vui lòng nhập cân nặng bệnh nhân" },
+        { field: "patientHistory", message: "Vui lòng nhập tiền sử bệnh nhân" },
+        { field: "acuteDisease", message: "Vui lòng nhập bệnh lý cấp tính" },
+        { field: "medicalUsing", message: "Vui lòng nhập thuốc đang dùng" },
+      ];
     clinicalRequired.forEach(({ field, message }) => {
       if (!isNonEmpty(String(data[field] || ""))) {
         ctx.addIssue({
@@ -380,17 +378,17 @@ const formSchema = z
 
     const clinicalStep4Extended: Array<{
       field:
-        | "medicalHistory"
-        | "familyHistory"
-        | "chronicDisease"
-        | "toxicExposure";
+      | "medicalHistory"
+      | "familyHistory"
+      | "chronicDisease"
+      | "toxicExposure";
       message: string;
     }> = [
-      { field: "medicalHistory", message: "Vui lòng nhập tiền sử bệnh" },
-      { field: "familyHistory", message: "Vui lòng nhập tiền sử gia đình" },
-      { field: "chronicDisease", message: "Vui lòng nhập bệnh lý mãn tính" },
-      { field: "toxicExposure", message: "Vui lòng nhập tiếp xúc độc hại" },
-    ];
+        { field: "medicalHistory", message: "Vui lòng nhập tiền sử bệnh" },
+        { field: "familyHistory", message: "Vui lòng nhập tiền sử gia đình" },
+        { field: "chronicDisease", message: "Vui lòng nhập bệnh lý mãn tính" },
+        { field: "toxicExposure", message: "Vui lòng nhập tiếp xúc độc hại" },
+      ];
     clinicalStep4Extended.forEach(({ field, message }) => {
       if (!isNonEmpty(String(data[field] || ""))) {
         ctx.addIssue({
@@ -404,23 +402,23 @@ const formSchema = z
     if (data.serviceType === "reproduction") {
       const reproductionRequired: Array<{
         field:
-          | "fetusesNumber"
-          | "fetusesWeek"
-          | "fetusesDay"
-          | "headRumpLength"
-          | "neckLength"
-          | "combinedTestResult"
-          | "ultrasoundResult";
+        | "fetusesNumber"
+        | "fetusesWeek"
+        | "fetusesDay"
+        | "headRumpLength"
+        | "neckLength"
+        | "combinedTestResult"
+        | "ultrasoundResult";
         message: string;
       }> = [
-        { field: "fetusesNumber", message: "Vui lòng chọn số thai (1–3)" },
-        { field: "fetusesWeek", message: "Vui lòng nhập tuần thai" },
-        { field: "fetusesDay", message: "Vui lòng nhập ngày thai" },
-        { field: "headRumpLength", message: "Vui lòng nhập chiều dài đầu mông (CRL)" },
-        { field: "neckLength", message: "Vui lòng nhập độ mờ da gáy" },
-        { field: "combinedTestResult", message: "Vui lòng nhập kết quả combined test" },
-        { field: "ultrasoundResult", message: "Vui lòng nhập kết quả siêu âm" },
-      ];
+          { field: "fetusesNumber", message: "Vui lòng chọn số thai (1–3)" },
+          { field: "fetusesWeek", message: "Vui lòng nhập tuần thai" },
+          { field: "fetusesDay", message: "Vui lòng nhập ngày thai" },
+          { field: "headRumpLength", message: "Vui lòng nhập chiều dài đầu mông (CRL)" },
+          { field: "neckLength", message: "Vui lòng nhập độ mờ da gáy" },
+          { field: "combinedTestResult", message: "Vui lòng nhập kết quả combined test" },
+          { field: "ultrasoundResult", message: "Vui lòng nhập kết quả siêu âm" },
+        ];
 
       reproductionRequired.forEach(({ field, message }) => {
         if (!isNonEmpty(String(data[field] || ""))) {
@@ -677,7 +675,7 @@ export default function CreatePrescriptionSlipScreen() {
       const parsed = parseStoredPatientAddress(String(rawAddress || ""));
       const normProvince = parsed.province
         ? resolveProvinceIndexKey(parsed.province)?.trim().replace(/\s+/g, " ") ||
-          parsed.province.trim().replace(/\s+/g, " ")
+        parsed.province.trim().replace(/\s+/g, " ")
         : "";
       methods.setValue("patientAddress", String(rawAddress || "").trim(), o);
       methods.setValue("patientAddressDetail", parsed.detail, o);
@@ -834,8 +832,8 @@ export default function CreatePrescriptionSlipScreen() {
 
     const patientHospitalId = String(
       (currentPatientResponse?.success ? currentPatientResponse.data?.hospitalId : "") ||
-        currentSpecify?.hospitalId ||
-        ""
+      currentSpecify?.hospitalId ||
+      ""
     ).trim();
     if (patientHospitalId && patientHospitalId !== doctorHospitalId) {
       return "Bệnh nhân hiện tại không thuộc cùng phòng khám/bệnh viện với bác sĩ chỉ định.";
@@ -1047,119 +1045,106 @@ export default function CreatePrescriptionSlipScreen() {
         lastPatientLookupPhoneRef.current = normalizedPhone;
 
         const name = String(patient.patientName || "").trim();
-          if (name) {
-            methods.setValue("patientName", name, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const dobStr = formatDateForInput(patient.patientDob);
-          if (dobStr) {
-            methods.setValue("patientDob", dobStr, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const g = normalizeGenderForPrescriptionSlip(patient.gender);
-          if (g) {
-            methods.setValue("patientGender", g, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const email = String(patient.patientEmail || "").trim();
-          if (email) {
-            methods.setValue("patientEmail", email, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const job = String(patient.patientJob || "").trim();
-          if (job) {
-            methods.setValue("patientJob", job, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const contactName = String(patient.patientContactName || "").trim();
-          if (contactName) {
-            methods.setValue("patientContactName", formatPatientNameInput(contactName), {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
-          const contactPhone = String(patient.patientContactPhone || "").replace(/[^\d]/g, "").trim();
-          if (contactPhone) {
-            methods.setValue("patientContactPhone", contactPhone, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            });
-          }
+        if (name) {
+          methods.setValue("patientName", name, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const dobStr = formatDateForInput(patient.patientDob);
+        if (dobStr) {
+          methods.setValue("patientDob", dobStr, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const g = normalizeGenderForPrescriptionSlip(patient.gender);
+        if (g) {
+          methods.setValue("patientGender", g, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const email = String(patient.patientEmail || "").trim();
+        if (email) {
+          methods.setValue("patientEmail", email, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const job = String(patient.patientJob || "").trim();
+        if (job) {
+          methods.setValue("patientJob", job, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const contactName = String(patient.patientContactName || "").trim();
+        if (contactName) {
+          methods.setValue("patientContactName", formatPatientNameInput(contactName), {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
+        const contactPhone = String(patient.patientContactPhone || "").replace(/[^\d]/g, "").trim();
+        if (contactPhone) {
+          methods.setValue("patientContactPhone", contactPhone, {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }
 
-          const patientAddress = String(patient.patientAddress || "").trim();
-          if (patientAddress) {
-            await syncPatientAddressFields(patientAddress);
-          } else {
-            const o = { shouldDirty: true, shouldTouch: true, shouldValidate: true };
-            methods.setValue("patientAddress", "", o);
-            methods.setValue("patientAddressProvince", "", o);
-            methods.setValue("patientAddressWard", "", o);
-            methods.setValue("patientAddressDetail", "", o);
-          }
+        const patientAddress = String(patient.patientAddress || "").trim();
+        if (patientAddress) {
+          await syncPatientAddressFields(patientAddress);
+        } else {
+          const o = { shouldDirty: true, shouldTouch: true, shouldValidate: true };
+          methods.setValue("patientAddress", "", o);
+          methods.setValue("patientAddressProvince", "", o);
+          methods.setValue("patientAddressWard", "", o);
+          methods.setValue("patientAddressDetail", "", o);
+        }
 
-          const pid = String(patient.patientId || "").trim();
-          const co = { shouldDirty: true, shouldTouch: true, shouldValidate: true as const };
-          if (pid) {
-            methods.setValue("patientId", pid, co);
-            try {
-              const clinRes = await patientClinicalService.getByPatientId(pid);
-              if (cancelled) return;
-              if (clinRes.success && clinRes.data) {
-                const c = clinRes.data as PatientClinicalResponse;
-                methods.setValue(
-                  "patientHeight",
-                  c.patientHeight !== undefined && c.patientHeight !== null ? String(c.patientHeight) : "",
-                  co
-                );
-                methods.setValue(
-                  "patientWeight",
-                  c.patientWeight !== undefined && c.patientWeight !== null ? String(c.patientWeight) : "",
-                  co
-                );
-                methods.setValue("patientHistory", String(c.patientHistory ?? "").trim(), co);
-                methods.setValue("medicalHistory", String(c.medicalHistory ?? "").trim(), co);
-                methods.setValue("acuteDisease", String(c.acuteDisease ?? "").trim(), co);
-                methods.setValue(
-                  "medicalUsing",
-                  Array.isArray(c.medicalUsing)
-                    ? c.medicalUsing.map((x) => String(x).trim()).filter(Boolean).join(", ")
-                    : String(c.medicalUsing ?? "").trim(),
-                  co
-                );
-                methods.setValue("familyHistory", String(c.familyHistory ?? "").trim(), co);
-                methods.setValue("chronicDisease", String(c.chronicDisease ?? "").trim(), co);
-                methods.setValue("toxicExposure", String(c.toxicExposure ?? "").trim(), co);
-              } else {
-                methods.setValue("patientHeight", "", co);
-                methods.setValue("patientWeight", "", co);
-                methods.setValue("patientHistory", "", co);
-                methods.setValue("medicalHistory", "", co);
-                methods.setValue("acuteDisease", "", co);
-                methods.setValue("medicalUsing", "", co);
-                methods.setValue("familyHistory", "", co);
-                methods.setValue("chronicDisease", "", co);
-                methods.setValue("toxicExposure", "", co);
-              }
-              methods.setValue("geneticTestResults", "", co);
-              methods.setValue("geneticTestResultsRelationship", "", co);
-            } catch {
+        const pid = String(patient.patientId || "").trim();
+        const co = { shouldDirty: true, shouldTouch: true, shouldValidate: true as const };
+        if (pid) {
+          methods.setValue("patientId", pid, co);
+          try {
+            const clinRes = await patientClinicalService.getByPatientId(pid);
+            if (cancelled) return;
+            if (clinRes.success && clinRes.data) {
+              const c = clinRes.data as PatientClinicalResponse;
+              methods.setValue(
+                "patientHeight",
+                c.patientHeight !== undefined && c.patientHeight !== null ? String(c.patientHeight) : "",
+                co
+              );
+              methods.setValue(
+                "patientWeight",
+                c.patientWeight !== undefined && c.patientWeight !== null ? String(c.patientWeight) : "",
+                co
+              );
+              methods.setValue("patientHistory", String(c.patientHistory ?? "").trim(), co);
+              methods.setValue("medicalHistory", String(c.medicalHistory ?? "").trim(), co);
+              methods.setValue("acuteDisease", String(c.acuteDisease ?? "").trim(), co);
+              methods.setValue(
+                "medicalUsing",
+                Array.isArray(c.medicalUsing)
+                  ? c.medicalUsing.map((x) => String(x).trim()).filter(Boolean).join(", ")
+                  : String(c.medicalUsing ?? "").trim(),
+                co
+              );
+              methods.setValue("familyHistory", String(c.familyHistory ?? "").trim(), co);
+              methods.setValue("chronicDisease", String(c.chronicDisease ?? "").trim(), co);
+              methods.setValue("toxicExposure", String(c.toxicExposure ?? "").trim(), co);
+            } else {
               methods.setValue("patientHeight", "", co);
               methods.setValue("patientWeight", "", co);
               methods.setValue("patientHistory", "", co);
@@ -1169,12 +1154,25 @@ export default function CreatePrescriptionSlipScreen() {
               methods.setValue("familyHistory", "", co);
               methods.setValue("chronicDisease", "", co);
               methods.setValue("toxicExposure", "", co);
-              methods.setValue("geneticTestResults", "", co);
-              methods.setValue("geneticTestResultsRelationship", "", co);
             }
-          } else {
-            methods.setValue("patientId", "", co);
+            methods.setValue("geneticTestResults", "", co);
+            methods.setValue("geneticTestResultsRelationship", "", co);
+          } catch {
+            methods.setValue("patientHeight", "", co);
+            methods.setValue("patientWeight", "", co);
+            methods.setValue("patientHistory", "", co);
+            methods.setValue("medicalHistory", "", co);
+            methods.setValue("acuteDisease", "", co);
+            methods.setValue("medicalUsing", "", co);
+            methods.setValue("familyHistory", "", co);
+            methods.setValue("chronicDisease", "", co);
+            methods.setValue("toxicExposure", "", co);
+            methods.setValue("geneticTestResults", "", co);
+            methods.setValue("geneticTestResultsRelationship", "", co);
           }
+        } else {
+          methods.setValue("patientId", "", co);
+        }
       } catch {
         // patient not found is acceptable; keep manual input flow
       } finally {
@@ -1205,7 +1203,7 @@ export default function CreatePrescriptionSlipScreen() {
     const parsedAddr = parseStoredPatientAddress(patientAddress);
     const normProvince = parsedAddr.province
       ? resolveProvinceIndexKey(parsedAddr.province)?.trim().replace(/\s+/g, " ") ||
-        parsedAddr.province.trim().replace(/\s+/g, " ")
+      parsedAddr.province.trim().replace(/\s+/g, " ")
       : "";
     const clinical = patientClinicalResponse?.success ? patientClinicalResponse.data : undefined;
 
@@ -1454,9 +1452,9 @@ export default function CreatePrescriptionSlipScreen() {
           acuteDisease: data.acuteDisease?.trim() || undefined,
           medicalUsing: data.medicalUsing
             ? data.medicalUsing
-                .split(",")
-                .map((x) => x.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
             : undefined,
         };
 
@@ -1553,8 +1551,8 @@ export default function CreatePrescriptionSlipScreen() {
             if (!updateReproductionRes.success) {
               throw new Error(
                 updateReproductionRes.error ||
-                  updateReproductionRes.message ||
-                  "Không thể cập nhật thông tin nhóm Sản"
+                updateReproductionRes.message ||
+                "Không thể cập nhật thông tin nhóm Sản"
               );
             }
           } else {
@@ -1562,8 +1560,8 @@ export default function CreatePrescriptionSlipScreen() {
             if (!createReproductionRes.success) {
               throw new Error(
                 createReproductionRes.error ||
-                  createReproductionRes.message ||
-                  "Không thể tạo thông tin nhóm Sản"
+                createReproductionRes.message ||
+                "Không thể tạo thông tin nhóm Sản"
               );
             }
           }
@@ -1593,8 +1591,8 @@ export default function CreatePrescriptionSlipScreen() {
           if (!updateEmbryoRes.success) {
             throw new Error(
               updateEmbryoRes.error ||
-                updateEmbryoRes.message ||
-                "Không thể cập nhật thông tin nhóm Phôi"
+              updateEmbryoRes.message ||
+              "Không thể cập nhật thông tin nhóm Phôi"
             );
           }
         } else {
@@ -1602,8 +1600,8 @@ export default function CreatePrescriptionSlipScreen() {
           if (!createEmbryoRes.success) {
             throw new Error(
               createEmbryoRes.error ||
-                createEmbryoRes.message ||
-                "Không thể tạo thông tin nhóm Phôi"
+              createEmbryoRes.message ||
+              "Không thể tạo thông tin nhóm Phôi"
             );
           }
         }
@@ -1632,8 +1630,8 @@ export default function CreatePrescriptionSlipScreen() {
           if (!updateDiseaseRes.success) {
             throw new Error(
               updateDiseaseRes.error ||
-                updateDiseaseRes.message ||
-                "Không thể cập nhật thông tin nhóm bệnh lý"
+              updateDiseaseRes.message ||
+              "Không thể cập nhật thông tin nhóm bệnh lý"
             );
           }
         } else {
@@ -1641,8 +1639,8 @@ export default function CreatePrescriptionSlipScreen() {
           if (!createDiseaseRes.success) {
             throw new Error(
               createDiseaseRes.error ||
-                createDiseaseRes.message ||
-                "Không thể tạo thông tin nhóm bệnh lý"
+              createDiseaseRes.message ||
+              "Không thể tạo thông tin nhóm bệnh lý"
             );
           }
         }
@@ -2163,15 +2161,15 @@ export default function CreatePrescriptionSlipScreen() {
                 {isEditMode
                   ? "Sửa phiếu xét nghiệm"
                   : isQuickMode
-                  ? "Tạo nhanh phiếu xét nghiệm"
-                  : "Tạo mới phiếu xét nghiệm"}
+                    ? "Tạo nhanh phiếu xét nghiệm"
+                    : "Tạo mới phiếu xét nghiệm"}
               </Text>
               <Text className="mt-0.5 text-xs text-slate-500">
                 {isEditMode
                   ? "Cập nhật đầy đủ thông tin phiếu"
                   : isQuickMode
-                  ? "Điền thông tin để tạo phiếu xét nghiệm mới"
-                  : "Thông tin tạo phiếu như web"}
+                    ? "Điền thông tin để tạo phiếu xét nghiệm mới"
+                    : "Thông tin tạo phiếu như web"}
               </Text>
             </View>
           </View>
@@ -2188,892 +2186,884 @@ export default function CreatePrescriptionSlipScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-          {isQuickMode ? (
-            <View className="bg-white rounded-2xl border border-sky-100 p-4">
-              <Text className="text-slate-900 text-[14px] font-extrabold">
-                Tạo nhanh phiếu xét nghiệm
-              </Text>
-              <Text className="text-slate-500 text-[12px] mt-1 mb-4">
-                Điền thông tin để tạo phiếu xét nghiệm mới
-              </Text>
-
-              <FormSelect
-                name="doctorId"
-                label="Bác sĩ chỉ định"
-                required
-                options={doctorOptions}
-                getLabel={(o) => o.label}
-                getValue={(o) => o.value}
-                placeholder="Chọn bác sĩ chỉ định"
-                modalTitle="Chọn bác sĩ chỉ định"
-              />
-
-              <View className="mb-4">
-                <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
-                  Phòng khám / Bệnh viện
+            {isQuickMode ? (
+              <View className="bg-white rounded-2xl border border-sky-100 p-4">
+                <Text className="text-slate-900 text-[14px] font-extrabold">
+                  Tạo nhanh phiếu xét nghiệm
                 </Text>
-                <View className="bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3">
-                  <Text className="text-[14px] font-semibold text-slate-700">
-                    {selectedQuickDoctor?.hospitalName || "Chọn bác sĩ chỉ định trước"}
-                  </Text>
-                </View>
-              </View>
-
-              <FormSelect
-                name="patientId"
-                label="Bệnh nhân"
-                required
-                options={quickPatientOptions}
-                getLabel={(o) => o.label}
-                getValue={(o) => o.value}
-                placeholder="Chọn bệnh nhân"
-                modalTitle="Chọn bệnh nhân"
-              />
-
-              <FormSelect
-                name="serviceId"
-                label="Dịch vụ"
-                required
-                options={quickServiceOptions}
-                getLabel={(o) => o.label}
-                getValue={(o) => o.value}
-                placeholder="Chọn dịch vụ"
-                modalTitle="Chọn dịch vụ"
-              />
-
-              <FormSelect
-                name="genomeTestId"
-                label="Xét nghiệm"
-                required
-                options={quickGenomeTestOptions}
-                getLabel={(o) => o.label}
-                getValue={(o) => o.value}
-                placeholder={selectedQuickServiceId ? "Chọn xét nghiệm" : "Vui lòng chọn dịch vụ trước"}
-                modalTitle="Chọn xét nghiệm"
-                disabled={!selectedQuickServiceId}
-              />
-
-              <FormInput
-                name="samplingSite"
-                label="Nơi thu mẫu"
-                placeholder={selectedQuickDoctor?.hospitalName || "Nhập nơi thu mẫu"}
-                maxLength={MAX_SAMPLING_SITE_LENGTH}
-              />
-
-              <FormTextarea
-                name="specifyNote"
-                label="Ghi chú"
-                placeholder="Nhập ghi chú (không bắt buộc)"
-                minHeight={90}
-                maxLength={MAX_NOTE_LENGTH}
-                helperText={`Tối đa ${MAX_NOTE_LENGTH} ký tự`}
-              />
-            </View>
-          ) : (
-            <View className="bg-white rounded-2xl border border-sky-100 p-4">
-            {isEditMode && (
-              <View className="mb-4">
-                <FormInfoBox>
-                  Chỉ sửa đúng phiếu bạn đã chọn từ danh sách — không đổi sang phiếu khác tại màn hình này.
-                </FormInfoBox>
-                <Text className="text-[13px] font-extrabold text-slate-700 mb-2 mt-3">Mã phiếu xét nghiệm</Text>
-                <View className="min-h-12 rounded-2xl border border-slate-200 bg-slate-100 px-3 py-2.5 flex-row items-center mb-1">
-                  {specifyDetailFetching ? (
-                    <ActivityIndicator color="#0284C7" />
-                  ) : (
-                    <Text className="flex-1 text-[14px] font-semibold text-slate-900 pr-2" numberOfLines={3}>
-                      {[
-                        routeSpecifyVoteId,
-                        currentSpecify?.patient?.patientName,
-                        currentSpecify?.genomeTest?.testName,
-                      ]
-                        .filter(Boolean)
-                        .join(" — ") || routeSpecifyVoteId}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            )}
-            {isStepFormMode && (
-              <View className="mb-4">
-                <Text className="text-slate-700 text-[12px] font-bold mb-2">
-                  Bước {currentFormStep}/{SPECIFY_FORM_STEP_COUNT}:{" "}
-                  {SPECIFY_FORM_STEPS[currentFormStep - 1]}
+                <Text className="text-slate-500 text-[12px] mt-1 mb-4">
+                  Điền thông tin để tạo phiếu xét nghiệm mới
                 </Text>
-                <Text className="text-slate-500 text-[11px] mb-2">
-                  Chạm ô bước (1–6) để mở nhanh — không bắt buộc đi lần lượt.
-                </Text>
-                <View className="flex-row gap-2">
-                  {SPECIFY_FORM_STEPS.map((step, index) => {
-                    const stepNumber = index + 1;
-                    const isActive = stepNumber === currentFormStep;
-                    const isDone = stepNumber < currentFormStep;
-                    return (
-                      <TouchableOpacity
-                        key={step}
-                        activeOpacity={0.75}
-                        onPress={() => setCurrentFormStep(stepNumber)}
-                        className={`flex-1 rounded-xl px-2 py-2 border ${
-                          isActive
-                            ? "bg-sky-600 border-sky-600"
-                            : isDone
-                            ? "bg-emerald-50 border-emerald-200"
-                            : "bg-slate-50 border-slate-200"
-                        }`}
-                      >
-                        <Text
-                          className={`text-[11px] font-extrabold text-center ${
-                            isActive
-                              ? "text-white"
-                              : isDone
-                              ? "text-emerald-700"
-                              : "text-slate-500"
-                          }`}
-                        >
-                          {stepNumber}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
 
-            {(!isStepFormMode || currentFormStep === 1) && (
-              <>
-            <FormSelect
-              name="serviceType"
-              label="Chọn nhóm dịch vụ"
-              required
-              options={serviceTypeOptions}
-              getLabel={(o) => o.label}
-              getValue={(o) => o.value}
-              placeholder="Lựa chọn"
-              modalTitle="Chọn nhóm dịch vụ"
-            />
-            <FormSelect
-              name="sendEmailPatient"
-              label="Gửi email cho bệnh nhân"
-              options={emailOptions}
-              getLabel={(o) => o.label}
-              getValue={(o) => o.value}
-              placeholder="Lựa chọn"
-              modalTitle="Chọn gửi email"
-            />
-              </>
-            )}
-
-            {(!isStepFormMode || currentFormStep === 2) && (
-              <>
-            <Text className="text-slate-900 text-[14px] font-extrabold mt-2 mb-3">Thông tin chung</Text>
-            <Text className="text-slate-700 text-[13px] font-bold mb-2">Bác sĩ chỉ định & phòng khám</Text>
-
-            <FormSelect
-              name="doctorId"
-              label="Bác sĩ chỉ định"
-              required
-              options={doctorOptions}
-              getLabel={(o) => o.label}
-              getValue={(o) => o.value}
-              placeholder="Chọn bác sĩ chỉ định"
-              modalTitle="Chọn bác sĩ chỉ định"
-            />
-
-            <View className="mb-4">
-              <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
-                Phòng khám / Bệnh viện <Text className="text-red-500">*</Text>
-              </Text>
-              <View className="bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3">
-                <Text className="text-[14px] font-semibold text-slate-700">
-                  {selectedQuickDoctor?.hospitalName?.trim() ||
-                    (selectedQuickDoctor?.hospitalId
-                      ? `Mã BV: ${selectedQuickDoctor.hospitalId}`
-                      : "Chọn bác sĩ — hiển thị theo phòng khám của bác sĩ")}
-                </Text>
-              </View>
-            </View>
-
-            <Text className="text-slate-700 text-[13px] font-bold mb-2">Thông tin người làm xét nghiệm</Text>
-
-            {/* NOTE: Keep phone + name in 1 column.
-               2-column layout intermittently collapses after selecting a phone suggestion (autofill),
-               causing label/helper text to wrap vertically on iOS. */}
-            <View className="gap-3">
-              <FormInput
-                name="patientPhone"
-                label="Số điện thoại"
-                required
-                placeholder="Nhập số điện thoại (VD: 0901234567)"
-                keyboardType="phone-pad"
-                formatter={formatPhoneInput}
-                maxLength={10}
-                onFocus={() => setShowPatientPhoneSuggestions(true)}
-                onBlur={() => setShowPatientPhoneSuggestions(false)}
-                helperText={
-                  isAutoFillingPatient
-                    ? "Đang kiểm tra SĐT và tự động điền thông tin bệnh nhân..."
-                    : !selectedQuickDoctor?.hospitalId
-                    ? "Chọn bác sĩ trước. Chỉ tự điền khi bệnh nhân thuộc đúng phòng khám của bác sĩ đã chọn."
-                    : "SĐT Việt Nam 10 số, bắt đầu bằng số 0"
-                }
-              />
-              {showPatientPhoneSuggestions &&
-              !isAutoFillingPatient &&
-              !!selectedQuickDoctor?.hospitalId &&
-              patientPhoneSuggestions.length > 0 ? (
-                <View className="-mt-2 mb-3 rounded-xl border border-sky-100 bg-sky-50 overflow-hidden">
-                  {patientPhoneSuggestions.map((s, idx) => (
-                    <TouchableOpacity
-                      key={`${s.phone}-${idx}`}
-                      activeOpacity={0.75}
-                      className={`px-3 py-2.5 ${idx < patientPhoneSuggestions.length - 1 ? "border-b border-sky-100" : ""}`}
-                      onPress={() => {
-                        // Move focus away from phone field after picking suggestion to avoid layout glitches
-                        // where the left column can momentarily collapse until a full re-layout.
-                        methods.setValue("patientPhone", s.phone, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        });
-                        setShowPatientPhoneSuggestions(false);
-                        requestAnimationFrame(() => {
-                          try {
-                            methods.setFocus("patientName");
-                          } catch {
-                            // ignore
-                          }
-                        });
-                      }}
-                    >
-                      <Text className="text-[12px] font-extrabold text-slate-800">{s.phone}</Text>
-                      {!!s.patientName && (
-                        <Text className="text-[11px] text-slate-600 mt-0.5" numberOfLines={2}>
-                          {s.patientName}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : null}
-              <FormInput
-                name="patientName"
-                label="Họ tên"
-                required
-                placeholder="Nhập vào họ và tên"
-                maxLength={MAX_NAME_LENGTH}
-                formatter={formatPatientNameInput}
-              />
-            </View>
-
-            <FormFieldGroup>
-              <FormDatePicker
-                name="patientDob"
-                label="Ngày sinh"
-                required
-                placeholder="Chọn ngày sinh"
-                maximumDate={new Date()}
-                helperText="Bấm để chọn ngày trên lịch"
-              />
-              <FormSelect
-                name="patientGender"
-                label="Giới tính"
-                required
-                options={PRESCRIPTION_SLIP_GENDER_OPTIONS}
-                getLabel={(o) => o.label}
-                getValue={(o) => o.value}
-                placeholder="Lựa chọn"
-                modalTitle="Chọn giới tính"
-              />
-            </FormFieldGroup>
-
-            <FormFieldGroup>
-              <FormInput
-                name="patientEmail"
-                label="Email"
-                placeholder="Nhập email (VD: example@gmail.com)"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                maxLength={120}
-              />
-              <FormInput
-                name="patientJob"
-                label="Nghề nghiệp"
-                placeholder="Nhập vào nghề nghiệp"
-                maxLength={MAX_JOB_LENGTH}
-              />
-            </FormFieldGroup>
-
-            <FormFieldGroup>
-              <FormInput
-                name="patientContactName"
-                label="Người liên hệ"
-                required
-                placeholder="Nhập vào họ và tên"
-                formatter={formatPatientNameInput}
-                maxLength={MAX_NAME_LENGTH}
-              />
-              <FormInput
-                name="patientContactPhone"
-                label="Số điện thoại liên hệ"
-                required
-                placeholder="Nhập số điện thoại"
-                keyboardType="phone-pad"
-                formatter={formatPhoneInput}
-                maxLength={10}
-                helperText="SĐT Việt Nam 10 số, bắt đầu bằng số 0"
-              />
-            </FormFieldGroup>
-
-            <FormTextarea
-              name="patientAddress"
-              label="Địa chỉ bệnh nhân"
-              required
-              placeholder="Nhập địa chỉ đầy đủ"
-              minHeight={90}
-              maxLength={MAX_ADDRESS_DETAIL_LENGTH}
-            />
-              </>
-            )}
-
-            {(!isStepFormMode || currentFormStep === 3) && (
-              <>
-            <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin xét nghiệm</Text>
-            <FormSelect
-              name="genomeTestId"
-              label="Mã xét nghiệm"
-              required
-              options={genomeTestOptions}
-              getLabel={(o) => o.label}
-              getValue={(o) => o.value}
-              placeholder="Nhập mã"
-              modalTitle="Chọn mã xét nghiệm"
-              disabled={isEditMode}
-            />
-            <FormInput
-              name="testName"
-              label="Tên xét nghiệm"
-              required
-              placeholder="Nhập để tìm kiếm"
-              maxLength={MAX_TEST_NAME_LENGTH}
-              editable={!genomeTestFieldsLocked}
-              helperText={
-                genomeTestFieldsLocked
-                  ? "Theo mã xét nghiệm đã chọn — không chỉnh sửa."
-                  : undefined
-              }
-            />
-            <FormTextarea
-              name="testDescription"
-              label="Mô tả xét nghiệm"
-              placeholder="Mô tả xét nghiệm"
-              minHeight={80}
-              maxLength={MAX_TEST_DESC_LENGTH}
-              disabled={genomeTestFieldsLocked}
-            />
-            <FormInput
-              name="testSample"
-              label="Mẫu xét nghiệm"
-              required
-              placeholder="Mẫu xét nghiệm"
-              maxLength={MAX_TEST_SAMPLE_LENGTH}
-              editable={!genomeTestFieldsLocked}
-            />
-            <FormSelect
-              name="embryoNumber"
-              label="Số lượng phôi"
-              required
-              options={[...EMBRYO_CREATE_OPTIONS]}
-              getLabel={(o) => o.label}
-              getValue={(o) => o.value}
-              placeholder="Chọn 1, 2 hoặc 3"
-              modalTitle="Chọn số lượng phôi"
-            />
-
-            <FormFieldGroup>
-              <FormInput
-                name="samplingSite"
-                label="Nơi thu mẫu"
-                required
-                placeholder="Nơi thu mẫu"
-                maxLength={MAX_SAMPLING_SITE_LENGTH}
-              />
-              <FormDatePicker
-                name="sampleCollectDate"
-                label="Ngày thu mẫu"
-                placeholder="Chọn ngày thu mẫu"
-                helperText="Bấm để chọn ngày trên lịch (tùy chọn)"
-              />
-            </FormFieldGroup>
-              </>
-            )}
-
-            {(!isStepFormMode || currentFormStep === 4) && (
-              <>
-            <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin lâm sàng</Text>
-            <FormFieldGroup>
-              <FormNumericInput
-                name="patientHeight"
-                label="Chiều cao (cm)"
-                type="decimal"
-                required
-                placeholder="Nhập chiều cao (cm)"
-                helperText="Giống web phiếu chỉ định: 0 – 200 cm"
-                numericMax={200}
-              />
-              <FormNumericInput
-                name="patientWeight"
-                label="Cân nặng (kg)"
-                type="decimal"
-                required
-                placeholder="Nhập cân nặng (kg)"
-                helperText="Giống web phiếu chỉ định: 0 – 100 kg"
-                numericMax={100}
-              />
-            </FormFieldGroup>
-            <FormTextarea
-              name="patientHistory"
-              label="Tiền sử bệnh nhân"
-              required
-              placeholder="Mô tả tiền sử bệnh nhân"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="acuteDisease"
-              label="Bệnh lý cấp tính"
-              required
-              placeholder="Mô tả bệnh lý cấp tính"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="medicalUsing"
-              label="Thuốc đang dùng"
-              required
-              placeholder="Liệt kê thuốc đang dùng (phân cách bằng dấu phẩy)"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="medicalHistory"
-              label="Tiền sử bệnh"
-              required
-              placeholder="Mô tả tiền sử bệnh"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="familyHistory"
-              label="Tiền sử gia đình"
-              required
-              placeholder="Mô tả tiền sử gia đình"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="chronicDisease"
-              label="Bệnh lý mãn tính"
-              required
-              placeholder="Mô tả bệnh lý mãn tính"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="toxicExposure"
-              label="Tiếp xúc độc hại"
-              required
-              placeholder="Mô tả tiếp xúc độc hại"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="geneticTestResults"
-              label="Kết quả xét nghiệm di truyền của bản thân"
-              placeholder="Nhập kết quả xét nghiệm di truyền trước đó của bệnh nhân"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-            <FormTextarea
-              name="geneticTestResultsRelationship"
-              label="Kết quả xét nghiệm di truyền của người thân"
-              placeholder="Nhập kết quả xét nghiệm di truyền trước đó của người thân"
-              minHeight={80}
-              maxLength={MAX_TEXTAREA_LENGTH}
-            />
-              </>
-            )}
-
-            {(!isStepFormMode || currentFormStep === 5) && (
-              <>
-            <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin nhóm xét nghiệm</Text>
-            {selectedServiceType === "reproduction" ? (
-              <>
-                <FormFieldGroup>
-                  <FormSelect
-                    name="fetusesNumber"
-                    label="Số thai"
-                    required
-                    options={[...EMBRYO_CREATE_OPTIONS]}
-                    getLabel={(o) => o.label}
-                    getValue={(o) => o.value}
-                    placeholder="Chọn 1, 2 hoặc 3"
-                    modalTitle="Chọn số thai"
-                  />
-                  <FormNumericInput
-                    name="fetusesWeek"
-                    label="Tuần thai (tối đa 40)"
-                    type="integer"
-                    placeholder="Tuần"
-                    helperText="Số nguyên từ 0 đến 40"
-                    numericMax={40}
-                  />
-                </FormFieldGroup>
-                <FormFieldGroup>
-                  <FormNumericInput
-                    name="fetusesDay"
-                    label="Ngày thai (tối đa 30)"
-                    type="integer"
-                    placeholder="Ngày"
-                    helperText="Số nguyên từ 0 đến 30"
-                    numericMax={30}
-                  />
-                  <FormDatePicker
-                    name="ultrasoundDay"
-                    label="Ngày siêu âm"
-                    placeholder="Chọn ngày siêu âm"
-                    helperText="Tùy chọn — không bắt buộc, không chặn ngày"
-                  />
-                </FormFieldGroup>
-                <FormFieldGroup>
-                  <FormNumericInput
-                    name="headRumpLength"
-                    label="Chiều dài đầu mông (CRL) (mm)"
-                    type="decimal"
-                    placeholder="Nhập chiều dài (mm)"
-                    helperText="Khoảng hợp lệ: 0 - 100 mm"
-                    numericMax={100}
-                  />
-                  <FormNumericInput
-                    name="neckLength"
-                    label="Độ mờ da gáy (NT) (mm)"
-                    type="decimal"
-                    placeholder="Nhập độ mờ (mm)"
-                    helperText="Khoảng hợp lệ: 0 - 5 mm"
-                    numericMax={5}
-                  />
-                </FormFieldGroup>
-                <FormTextarea
-                  name="combinedTestResult"
-                  label="Kết quả combined test"
-                  placeholder="Mô tả kết quả combined test"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormTextarea
-                  name="ultrasoundResult"
-                  label="Kết quả siêu âm"
-                  placeholder="Mô tả kết quả siêu âm"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-              </>
-            ) : selectedServiceType === "embryo" ? (
-              <>
                 <FormSelect
-                  name="embryoNumber"
-                  label="Số lượng phôi"
+                  name="doctorId"
+                  label="Bác sĩ chỉ định"
                   required
-                  options={[...EMBRYO_CREATE_OPTIONS]}
+                  options={doctorOptions}
                   getLabel={(o) => o.label}
                   getValue={(o) => o.value}
-                  placeholder="Chọn 1, 2 hoặc 3"
-                  modalTitle="Chọn số lượng phôi"
+                  placeholder="Chọn bác sĩ chỉ định"
+                  modalTitle="Chọn bác sĩ chỉ định"
                 />
-                <FormDatePicker
-                  name="embryoBiospyDate"
-                  label="Ngày sinh thiết"
-                  placeholder="dd/mm/yyyy"
-                  helperText="Tùy chọn — không chặn ngày"
-                />
-                <FormInput
-                  name="embryoBiospy"
-                  label="Sinh thiết"
-                  placeholder="Loại sinh thiết"
-                  maxLength={255}
-                />
-                <FormInput
-                  name="embryoCellContainingSolution"
-                  label="Dung dịch chứa tế bào"
-                  placeholder="Loại dung dịch"
-                  maxLength={255}
-                />
-                <FormInput
-                  name="embryoStatus"
-                  label="Tình trạng phôi"
-                  placeholder="Mô tả tình trạng phôi"
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormTextarea
-                  name="embryoMorphologicalAssessment"
-                  label="Đánh giá hình thái"
-                  placeholder="Mô tả đánh giá hình thái"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormFieldGroup>
-                  <FormSelect
-                    name="embryoCellNucleus"
-                    label="Có nhân tế bào"
-                    options={[...YES_NO_OPTIONS]}
-                    getLabel={(o) => o.label}
-                    getValue={(o) => o.value}
-                    placeholder="Chọn"
-                    modalTitle="Có nhân tế bào"
-                  />
-                  <FormInput
-                    name="embryoNegativeControl"
-                    label="Đối chứng âm"
-                    placeholder="Thông tin đối chứng âm"
-                    maxLength={255}
-                  />
-                </FormFieldGroup>
-              </>
-            ) : selectedServiceType === "disease" ? (
-              <>
-                <FormTextarea
-                  name="diseaseSymptom"
-                  label="Triệu chứng"
-                  placeholder="Mô tả triệu chứng"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormTextarea
-                  name="diseaseDiagnose"
-                  label="Chẩn đoán"
-                  placeholder="Mô tả chẩn đoán"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <View className="mt-1 mb-2">
-                  <Text className="text-slate-800 text-sm font-extrabold mb-2">Hình ảnh chẩn đoán</Text>
-                  <Text className="text-xs text-slate-500 mb-2">
-                    Chọn ảnh từ thư viện hoặc chụp ảnh — ảnh được tải lên Cloudinary và lưu dưới dạng URL.
+
+                <View className="mb-4">
+                  <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
+                    Phòng khám / Bệnh viện
                   </Text>
-                  {!!diseaseDiagnoseImageUrl?.trim() && (
-                    <View className="mb-3 rounded-xl border border-sky-200 overflow-hidden bg-sky-50 self-start">
-                      <Image
-                        source={{ uri: diseaseDiagnoseImageUrl.trim() }}
-                        className="w-40 h-40"
-                        resizeMode="cover"
+                  <View className="bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3">
+                    <Text className="text-[14px] font-semibold text-slate-700">
+                      {selectedQuickDoctor?.hospitalName || "Chọn bác sĩ chỉ định trước"}
+                    </Text>
+                  </View>
+                </View>
+
+                <FormSelect
+                  name="patientId"
+                  label="Bệnh nhân"
+                  required
+                  options={quickPatientOptions}
+                  getLabel={(o) => o.label}
+                  getValue={(o) => o.value}
+                  placeholder="Chọn bệnh nhân"
+                  modalTitle="Chọn bệnh nhân"
+                />
+
+                <FormSelect
+                  name="serviceId"
+                  label="Dịch vụ"
+                  required
+                  options={quickServiceOptions}
+                  getLabel={(o) => o.label}
+                  getValue={(o) => o.value}
+                  placeholder="Chọn dịch vụ"
+                  modalTitle="Chọn dịch vụ"
+                />
+
+                <FormSelect
+                  name="genomeTestId"
+                  label="Xét nghiệm"
+                  required
+                  options={quickGenomeTestOptions}
+                  getLabel={(o) => o.label}
+                  getValue={(o) => o.value}
+                  placeholder={selectedQuickServiceId ? "Chọn xét nghiệm" : "Vui lòng chọn dịch vụ trước"}
+                  modalTitle="Chọn xét nghiệm"
+                  disabled={!selectedQuickServiceId}
+                />
+
+                <FormInput
+                  name="samplingSite"
+                  label="Nơi thu mẫu"
+                  placeholder={selectedQuickDoctor?.hospitalName || "Nhập nơi thu mẫu"}
+                  maxLength={MAX_SAMPLING_SITE_LENGTH}
+                />
+
+                <FormTextarea
+                  name="specifyNote"
+                  label="Ghi chú"
+                  placeholder="Nhập ghi chú (không bắt buộc)"
+                  minHeight={90}
+                  maxLength={MAX_NOTE_LENGTH}
+                  helperText={`Tối đa ${MAX_NOTE_LENGTH} ký tự`}
+                />
+              </View>
+            ) : (
+              <View className="bg-white rounded-2xl border border-sky-100 p-4">
+                {isEditMode && (
+                  <View className="mb-4">
+                    <FormInfoBox>
+                      Chỉ sửa đúng phiếu bạn đã chọn từ danh sách — không đổi sang phiếu khác tại màn hình này.
+                    </FormInfoBox>
+                    <Text className="text-[13px] font-extrabold text-slate-700 mb-2 mt-3">Mã phiếu xét nghiệm</Text>
+                    <View className="min-h-12 rounded-2xl border border-slate-200 bg-slate-100 px-3 py-2.5 flex-row items-center mb-1">
+                      {specifyDetailFetching ? (
+                        <ActivityIndicator color="#0284C7" />
+                      ) : (
+                        <Text className="flex-1 text-[14px] font-semibold text-slate-900 pr-2" numberOfLines={3}>
+                          {[
+                            routeSpecifyVoteId,
+                            currentSpecify?.patient?.patientName,
+                            currentSpecify?.genomeTest?.testName,
+                          ]
+                            .filter(Boolean)
+                            .join(" — ") || routeSpecifyVoteId}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+                {isStepFormMode && (
+                  <View className="mb-4">
+                    <Text className="text-slate-700 text-[12px] font-bold mb-2">
+                      Bước {currentFormStep}/{SPECIFY_FORM_STEP_COUNT}:{" "}
+                      {SPECIFY_FORM_STEPS[currentFormStep - 1]}
+                    </Text>
+                    <Text className="text-slate-500 text-[11px] mb-2">
+                      Chạm ô bước (1–6) để mở nhanh — không bắt buộc đi lần lượt.
+                    </Text>
+                    <View className="flex-row gap-2">
+                      {SPECIFY_FORM_STEPS.map((step, index) => {
+                        const stepNumber = index + 1;
+                        const isActive = stepNumber === currentFormStep;
+                        const isDone = stepNumber < currentFormStep;
+                        return (
+                          <TouchableOpacity
+                            key={step}
+                            activeOpacity={0.75}
+                            onPress={() => setCurrentFormStep(stepNumber)}
+                            className={`flex-1 rounded-xl px-2 py-2 border ${isActive
+                                ? "bg-sky-600 border-sky-600"
+                                : isDone
+                                  ? "bg-emerald-50 border-emerald-200"
+                                  : "bg-slate-50 border-slate-200"
+                              }`}
+                          >
+                            <Text
+                              className={`text-[11px] font-extrabold text-center ${isActive
+                                  ? "text-white"
+                                  : isDone
+                                    ? "text-emerald-700"
+                                    : "text-slate-500"
+                                }`}
+                            >
+                              {stepNumber}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 1) && (
+                  <>
+                    <FormSelect
+                      name="serviceType"
+                      label="Chọn nhóm dịch vụ"
+                      required
+                      options={serviceTypeOptions}
+                      getLabel={(o) => o.label}
+                      getValue={(o) => o.value}
+                      placeholder="Lựa chọn"
+                      modalTitle="Chọn nhóm dịch vụ"
+                    />
+                    <FormSelect
+                      name="sendEmailPatient"
+                      label="Gửi email cho bệnh nhân"
+                      options={emailOptions}
+                      getLabel={(o) => o.label}
+                      getValue={(o) => o.value}
+                      placeholder="Lựa chọn"
+                      modalTitle="Chọn gửi email"
+                    />
+                  </>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 2) && (
+                  <>
+                    <Text className="text-slate-900 text-[14px] font-extrabold mt-2 mb-3">Thông tin chung</Text>
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2">Bác sĩ chỉ định & phòng khám</Text>
+
+                    <FormSelect
+                      name="doctorId"
+                      label="Bác sĩ chỉ định"
+                      required
+                      options={doctorOptions}
+                      getLabel={(o) => o.label}
+                      getValue={(o) => o.value}
+                      placeholder="Chọn bác sĩ chỉ định"
+                      modalTitle="Chọn bác sĩ chỉ định"
+                    />
+
+                    <View className="mb-4">
+                      <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
+                        Phòng khám / Bệnh viện <Text className="text-red-500">*</Text>
+                      </Text>
+                      <View className="bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3">
+                        <Text className="text-[14px] font-semibold text-slate-700">
+                          {selectedQuickDoctor?.hospitalName?.trim() ||
+                            (selectedQuickDoctor?.hospitalId
+                              ? `Mã BV: ${selectedQuickDoctor.hospitalId}`
+                              : "Chọn bác sĩ — hiển thị theo phòng khám của bác sĩ")}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2">Thông tin người làm xét nghiệm</Text>
+
+                    {/* NOTE: Keep phone + name in 1 column.
+               2-column layout intermittently collapses after selecting a phone suggestion (autofill),
+               causing label/helper text to wrap vertically on iOS. */}
+                    <View className="gap-3">
+                      <FormInput
+                        name="patientPhone"
+                        label="Số điện thoại"
+                        required
+                        placeholder="Nhập số điện thoại (VD: 0901234567)"
+                        keyboardType="phone-pad"
+                        formatter={formatPhoneInput}
+                        maxLength={10}
+                        onFocus={() => setShowPatientPhoneSuggestions(true)}
+                        onBlur={() => setShowPatientPhoneSuggestions(false)}
+                        helperText={
+                          isAutoFillingPatient
+                            ? "Đang kiểm tra SĐT và tự động điền thông tin bệnh nhân..."
+                            : !selectedQuickDoctor?.hospitalId
+                              ? "Chọn bác sĩ trước. Chỉ tự điền khi bệnh nhân thuộc đúng phòng khám của bác sĩ đã chọn."
+                              : "SĐT Việt Nam 10 số, bắt đầu bằng số 0"
+                        }
+                      />
+                      {showPatientPhoneSuggestions &&
+                        !isAutoFillingPatient &&
+                        !!selectedQuickDoctor?.hospitalId &&
+                        patientPhoneSuggestions.length > 0 ? (
+                        <View className="-mt-2 mb-3 rounded-xl border border-sky-100 bg-sky-50 overflow-hidden">
+                          {patientPhoneSuggestions.map((s, idx) => (
+                            <TouchableOpacity
+                              key={`${s.phone}-${idx}`}
+                              activeOpacity={0.75}
+                              className={`px-3 py-2.5 ${idx < patientPhoneSuggestions.length - 1 ? "border-b border-sky-100" : ""}`}
+                              onPress={() => {
+                                // Move focus away from phone field after picking suggestion to avoid layout glitches
+                                // where the left column can momentarily collapse until a full re-layout.
+                                methods.setValue("patientPhone", s.phone, {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                });
+                                setShowPatientPhoneSuggestions(false);
+                                requestAnimationFrame(() => {
+                                  try {
+                                    methods.setFocus("patientName");
+                                  } catch {
+                                    // ignore
+                                  }
+                                });
+                              }}
+                            >
+                              <Text className="text-[12px] font-extrabold text-slate-800">{s.phone}</Text>
+                              {!!s.patientName && (
+                                <Text className="text-[11px] text-slate-600 mt-0.5" numberOfLines={2}>
+                                  {s.patientName}
+                                </Text>
+                              )}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ) : null}
+                      <FormInput
+                        name="patientName"
+                        label="Họ tên"
+                        required
+                        placeholder="Nhập vào họ và tên"
+                        maxLength={MAX_NAME_LENGTH}
+                        formatter={formatPatientNameInput}
                       />
                     </View>
-                  )}
-                  <View className="flex-row flex-wrap gap-2 mb-2">
-                    <TouchableOpacity
-                      onPress={pickDiseaseDiagnoseImageFromLibrary}
-                      disabled={uploadingDiseaseDiagnoseImage}
-                      className={`px-4 py-2.5 rounded-xl border ${
-                        uploadingDiseaseDiagnoseImage ? "bg-slate-200 border-slate-200" : "bg-sky-600 border-sky-600"
-                      }`}
-                      activeOpacity={0.85}
-                    >
-                      {uploadingDiseaseDiagnoseImage ? (
-                        <ActivityIndicator color="#fff" />
-                      ) : (
-                        <Text className="text-white text-xs font-extrabold">Chọn ảnh</Text>
-                      )}
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={pickDiseaseDiagnoseImageFromCamera}
-                      disabled={uploadingDiseaseDiagnoseImage}
-                      className={`px-4 py-2.5 rounded-xl border ${
-                        uploadingDiseaseDiagnoseImage ? "bg-slate-100 border-slate-200" : "bg-white border-sky-300"
-                      }`}
-                      activeOpacity={0.85}
-                    >
-                      <Text
-                        className={`text-xs font-extrabold ${
-                          uploadingDiseaseDiagnoseImage ? "text-slate-400" : "text-sky-700"
-                        }`}
-                      >
-                        Chụp ảnh
-                      </Text>
-                    </TouchableOpacity>
-                    {!!diseaseDiagnoseImageUrl?.trim() && (
-                      <TouchableOpacity
-                        onPress={clearDiseaseDiagnoseImage}
-                        disabled={uploadingDiseaseDiagnoseImage}
-                        className="px-4 py-2.5 rounded-xl border border-red-200 bg-red-50"
-                        activeOpacity={0.85}
-                      >
-                        <Text className="text-red-700 text-xs font-extrabold">Xóa ảnh</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <FormInput
-                    name="diseaseDiagnoseImage"
-                    label="Hoặc dán URL ảnh"
-                    placeholder="https://..."
-                    maxLength={2000}
-                  />
-                </View>
-                <FormTextarea
-                  name="diseaseTestRelated"
-                  label="Xét nghiệm liên quan"
-                  placeholder="Mô tả xét nghiệm liên quan"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormTextarea
-                  name="diseaseTreatmentMethods"
-                  label="Phương pháp điều trị"
-                  placeholder="Mô tả phương pháp điều trị"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormNumericInput
-                  name="diseaseTreatmentTimeDay"
-                  label="Thời gian điều trị (ngày)"
-                  type="integer"
-                  placeholder="Số ngày điều trị"
-                  helperText="Số nguyên ≥ 0"
-                />
-                <FormTextarea
-                  name="diseaseDrugResistance"
-                  label="Kháng thuốc"
-                  placeholder="Mô tả tình trạng kháng thuốc"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-                <FormTextarea
-                  name="diseaseRelapse"
-                  label="Tái phát"
-                  placeholder="Mô tả tình trạng tái phát"
-                  minHeight={80}
-                  maxLength={MAX_TEXTAREA_LENGTH}
-                />
-              </>
-            ) : (
-              <FormInfoBox>
-                Đã chọn {SERVICE_TYPE_MAPPER[selectedServiceType] || selectedServiceType}. Nhập thông tin nhóm phù hợp theo nghiệp vụ.
-              </FormInfoBox>
-            )}
-              </>
-            )}
 
-            {(!isStepFormMode || currentFormStep === 6) && (
-              <>
-            <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Ghi chú</Text>
-            <FormTextarea
-              name="specifyNote"
-              label="Ghi chú phiếu"
-              placeholder="Nhập ghi chú cho phiếu chỉ định (nếu có)"
-              minHeight={90}
-              maxLength={MAX_NOTE_LENGTH}
-              helperText={`Tối đa ${MAX_NOTE_LENGTH} ký tự`}
-            />
-              </>
+                    <FormFieldGroup>
+                      <FormDatePicker
+                        name="patientDob"
+                        label="Ngày sinh"
+                        required
+                        placeholder="Chọn ngày sinh"
+                        maximumDate={new Date()}
+                        helperText="Bấm để chọn ngày trên lịch"
+                      />
+                      <FormSelect
+                        name="patientGender"
+                        label="Giới tính"
+                        required
+                        options={PRESCRIPTION_SLIP_GENDER_OPTIONS}
+                        getLabel={(o) => o.label}
+                        getValue={(o) => o.value}
+                        placeholder="Lựa chọn"
+                        modalTitle="Chọn giới tính"
+                      />
+                    </FormFieldGroup>
+
+                    <FormFieldGroup>
+                      <FormInput
+                        name="patientEmail"
+                        label="Email"
+                        placeholder="Nhập email (VD: example@gmail.com)"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        maxLength={120}
+                      />
+                      <FormInput
+                        name="patientJob"
+                        label="Nghề nghiệp"
+                        placeholder="Nhập vào nghề nghiệp"
+                        maxLength={MAX_JOB_LENGTH}
+                      />
+                    </FormFieldGroup>
+
+                    <FormFieldGroup>
+                      <FormInput
+                        name="patientContactName"
+                        label="Người liên hệ"
+                        required
+                        placeholder="Nhập vào họ và tên"
+                        formatter={formatPatientNameInput}
+                        maxLength={MAX_NAME_LENGTH}
+                      />
+                      <FormInput
+                        name="patientContactPhone"
+                        label="Số điện thoại liên hệ"
+                        required
+                        placeholder="Nhập số điện thoại"
+                        keyboardType="phone-pad"
+                        formatter={formatPhoneInput}
+                        maxLength={10}
+                        helperText="SĐT Việt Nam 10 số, bắt đầu bằng số 0"
+                      />
+                    </FormFieldGroup>
+
+                    <FormTextarea
+                      name="patientAddress"
+                      label="Địa chỉ bệnh nhân"
+                      required
+                      placeholder="Nhập địa chỉ đầy đủ"
+                      minHeight={90}
+                      maxLength={MAX_ADDRESS_DETAIL_LENGTH}
+                    />
+                  </>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 3) && (
+                  <>
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin xét nghiệm</Text>
+                    <FormSelect
+                      name="genomeTestId"
+                      label="Mã xét nghiệm"
+                      required
+                      options={genomeTestOptions}
+                      getLabel={(o) => o.label}
+                      getValue={(o) => o.value}
+                      placeholder="Nhập mã"
+                      modalTitle="Chọn mã xét nghiệm"
+                      disabled={isEditMode}
+                    />
+                    <FormInput
+                      name="testName"
+                      label="Tên xét nghiệm"
+                      required
+                      placeholder="Nhập để tìm kiếm"
+                      maxLength={MAX_TEST_NAME_LENGTH}
+                      editable={!genomeTestFieldsLocked}
+                      helperText={
+                        genomeTestFieldsLocked
+                          ? "Theo mã xét nghiệm đã chọn — không chỉnh sửa."
+                          : undefined
+                      }
+                    />
+                    <FormTextarea
+                      name="testDescription"
+                      label="Mô tả xét nghiệm"
+                      placeholder="Mô tả xét nghiệm"
+                      minHeight={80}
+                      maxLength={MAX_TEST_DESC_LENGTH}
+                      disabled={genomeTestFieldsLocked}
+                    />
+                    <FormInput
+                      name="testSample"
+                      label="Mẫu xét nghiệm"
+                      required
+                      placeholder="Mẫu xét nghiệm"
+                      maxLength={MAX_TEST_SAMPLE_LENGTH}
+                      editable={!genomeTestFieldsLocked}
+                    />
+                    <FormSelect
+                      name="embryoNumber"
+                      label="Số lượng phôi"
+                      required
+                      options={[...EMBRYO_CREATE_OPTIONS]}
+                      getLabel={(o) => o.label}
+                      getValue={(o) => o.value}
+                      placeholder="Chọn 1, 2 hoặc 3"
+                      modalTitle="Chọn số lượng phôi"
+                    />
+
+                    <FormFieldGroup>
+                      <FormInput
+                        name="samplingSite"
+                        label="Nơi thu mẫu"
+                        required
+                        placeholder="Nơi thu mẫu"
+                        maxLength={MAX_SAMPLING_SITE_LENGTH}
+                      />
+                      <FormDatePicker
+                        name="sampleCollectDate"
+                        label="Ngày thu mẫu"
+                        placeholder="Chọn ngày thu mẫu"
+                        helperText="Bấm để chọn ngày trên lịch (tùy chọn)"
+                      />
+                    </FormFieldGroup>
+                  </>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 4) && (
+                  <>
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin lâm sàng</Text>
+                    <FormFieldGroup>
+                      <FormNumericInput
+                        name="patientHeight"
+                        label="Chiều cao (cm)"
+                        type="decimal"
+                        required
+                        placeholder="Nhập chiều cao (cm)"
+                        helperText="Giống web phiếu chỉ định: 0 – 200 cm"
+                        numericMax={200}
+                      />
+                      <FormNumericInput
+                        name="patientWeight"
+                        label="Cân nặng (kg)"
+                        type="decimal"
+                        required
+                        placeholder="Nhập cân nặng (kg)"
+                        helperText="Giống web phiếu chỉ định: 0 – 100 kg"
+                        numericMax={100}
+                      />
+                    </FormFieldGroup>
+                    <FormTextarea
+                      name="patientHistory"
+                      label="Tiền sử bệnh nhân"
+                      required
+                      placeholder="Mô tả tiền sử bệnh nhân"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="acuteDisease"
+                      label="Bệnh lý cấp tính"
+                      required
+                      placeholder="Mô tả bệnh lý cấp tính"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="medicalUsing"
+                      label="Thuốc đang dùng"
+                      required
+                      placeholder="Liệt kê thuốc đang dùng (phân cách bằng dấu phẩy)"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="medicalHistory"
+                      label="Tiền sử bệnh"
+                      required
+                      placeholder="Mô tả tiền sử bệnh"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="familyHistory"
+                      label="Tiền sử gia đình"
+                      required
+                      placeholder="Mô tả tiền sử gia đình"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="chronicDisease"
+                      label="Bệnh lý mãn tính"
+                      required
+                      placeholder="Mô tả bệnh lý mãn tính"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="toxicExposure"
+                      label="Tiếp xúc độc hại"
+                      required
+                      placeholder="Mô tả tiếp xúc độc hại"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="geneticTestResults"
+                      label="Kết quả xét nghiệm di truyền của bản thân"
+                      placeholder="Nhập kết quả xét nghiệm di truyền trước đó của bệnh nhân"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                    <FormTextarea
+                      name="geneticTestResultsRelationship"
+                      label="Kết quả xét nghiệm di truyền của người thân"
+                      placeholder="Nhập kết quả xét nghiệm di truyền trước đó của người thân"
+                      minHeight={80}
+                      maxLength={MAX_TEXTAREA_LENGTH}
+                    />
+                  </>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 5) && (
+                  <>
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Thông tin nhóm xét nghiệm</Text>
+                    {selectedServiceType === "reproduction" ? (
+                      <>
+                        <FormFieldGroup>
+                          <FormSelect
+                            name="fetusesNumber"
+                            label="Số thai"
+                            required
+                            options={[...EMBRYO_CREATE_OPTIONS]}
+                            getLabel={(o) => o.label}
+                            getValue={(o) => o.value}
+                            placeholder="Chọn 1, 2 hoặc 3"
+                            modalTitle="Chọn số thai"
+                          />
+                          <FormNumericInput
+                            name="fetusesWeek"
+                            label="Tuần thai (tối đa 40)"
+                            type="integer"
+                            placeholder="Tuần"
+                            helperText="Số nguyên từ 0 đến 40"
+                            numericMax={40}
+                          />
+                        </FormFieldGroup>
+                        <FormFieldGroup>
+                          <FormNumericInput
+                            name="fetusesDay"
+                            label="Ngày thai (tối đa 30)"
+                            type="integer"
+                            placeholder="Ngày"
+                            helperText="Số nguyên từ 0 đến 30"
+                            numericMax={30}
+                          />
+                          <FormDatePicker
+                            name="ultrasoundDay"
+                            label="Ngày siêu âm"
+                            placeholder="Chọn ngày siêu âm"
+                            helperText="Tùy chọn — không bắt buộc, không chặn ngày"
+                          />
+                        </FormFieldGroup>
+                        <FormFieldGroup>
+                          <FormNumericInput
+                            name="headRumpLength"
+                            label="Chiều dài đầu mông (CRL) (mm)"
+                            type="decimal"
+                            placeholder="Nhập chiều dài (mm)"
+                            helperText="Khoảng hợp lệ: 0 - 100 mm"
+                            numericMax={100}
+                          />
+                          <FormNumericInput
+                            name="neckLength"
+                            label="Độ mờ da gáy (NT) (mm)"
+                            type="decimal"
+                            placeholder="Nhập độ mờ (mm)"
+                            helperText="Khoảng hợp lệ: 0 - 5 mm"
+                            numericMax={5}
+                          />
+                        </FormFieldGroup>
+                        <FormTextarea
+                          name="combinedTestResult"
+                          label="Kết quả combined test"
+                          placeholder="Mô tả kết quả combined test"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormTextarea
+                          name="ultrasoundResult"
+                          label="Kết quả siêu âm"
+                          placeholder="Mô tả kết quả siêu âm"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                      </>
+                    ) : selectedServiceType === "embryo" ? (
+                      <>
+                        <FormSelect
+                          name="embryoNumber"
+                          label="Số lượng phôi"
+                          required
+                          options={[...EMBRYO_CREATE_OPTIONS]}
+                          getLabel={(o) => o.label}
+                          getValue={(o) => o.value}
+                          placeholder="Chọn 1, 2 hoặc 3"
+                          modalTitle="Chọn số lượng phôi"
+                        />
+                        <FormDatePicker
+                          name="embryoBiospyDate"
+                          label="Ngày sinh thiết"
+                          placeholder="dd/mm/yyyy"
+                          helperText="Tùy chọn — không chặn ngày"
+                        />
+                        <FormInput
+                          name="embryoBiospy"
+                          label="Sinh thiết"
+                          placeholder="Loại sinh thiết"
+                          maxLength={255}
+                        />
+                        <FormInput
+                          name="embryoCellContainingSolution"
+                          label="Dung dịch chứa tế bào"
+                          placeholder="Loại dung dịch"
+                          maxLength={255}
+                        />
+                        <FormInput
+                          name="embryoStatus"
+                          label="Tình trạng phôi"
+                          placeholder="Mô tả tình trạng phôi"
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormTextarea
+                          name="embryoMorphologicalAssessment"
+                          label="Đánh giá hình thái"
+                          placeholder="Mô tả đánh giá hình thái"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormFieldGroup>
+                          <FormSelect
+                            name="embryoCellNucleus"
+                            label="Có nhân tế bào"
+                            options={[...YES_NO_OPTIONS]}
+                            getLabel={(o) => o.label}
+                            getValue={(o) => o.value}
+                            placeholder="Chọn"
+                            modalTitle="Có nhân tế bào"
+                          />
+                          <FormInput
+                            name="embryoNegativeControl"
+                            label="Đối chứng âm"
+                            placeholder="Thông tin đối chứng âm"
+                            maxLength={255}
+                          />
+                        </FormFieldGroup>
+                      </>
+                    ) : selectedServiceType === "disease" ? (
+                      <>
+                        <FormTextarea
+                          name="diseaseSymptom"
+                          label="Triệu chứng"
+                          placeholder="Mô tả triệu chứng"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormTextarea
+                          name="diseaseDiagnose"
+                          label="Chẩn đoán"
+                          placeholder="Mô tả chẩn đoán"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <View className="mt-1 mb-2">
+                          <Text className="text-slate-800 text-sm font-extrabold mb-2">Hình ảnh chẩn đoán</Text>
+                          <Text className="text-xs text-slate-500 mb-2">
+                            Chọn ảnh từ thư viện hoặc chụp ảnh — ảnh được tải lên Cloudinary và lưu dưới dạng URL.
+                          </Text>
+                          {!!diseaseDiagnoseImageUrl?.trim() && (
+                            <View className="mb-3 rounded-xl border border-sky-200 overflow-hidden bg-sky-50 self-start">
+                              <Image
+                                source={{ uri: diseaseDiagnoseImageUrl.trim() }}
+                                className="w-40 h-40"
+                                resizeMode="cover"
+                              />
+                            </View>
+                          )}
+                          <View className="flex-row flex-wrap gap-2 mb-2">
+                            <TouchableOpacity
+                              onPress={pickDiseaseDiagnoseImageFromLibrary}
+                              disabled={uploadingDiseaseDiagnoseImage}
+                              className={`px-4 py-2.5 rounded-xl border ${uploadingDiseaseDiagnoseImage ? "bg-slate-200 border-slate-200" : "bg-sky-600 border-sky-600"
+                                }`}
+                              activeOpacity={0.85}
+                            >
+                              {uploadingDiseaseDiagnoseImage ? (
+                                <ActivityIndicator color="#fff" />
+                              ) : (
+                                <Text className="text-white text-xs font-extrabold">Chọn ảnh</Text>
+                              )}
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={pickDiseaseDiagnoseImageFromCamera}
+                              disabled={uploadingDiseaseDiagnoseImage}
+                              className={`px-4 py-2.5 rounded-xl border ${uploadingDiseaseDiagnoseImage ? "bg-slate-100 border-slate-200" : "bg-white border-sky-300"
+                                }`}
+                              activeOpacity={0.85}
+                            >
+                              <Text
+                                className={`text-xs font-extrabold ${uploadingDiseaseDiagnoseImage ? "text-slate-400" : "text-sky-700"
+                                  }`}
+                              >
+                                Chụp ảnh
+                              </Text>
+                            </TouchableOpacity>
+                            {!!diseaseDiagnoseImageUrl?.trim() && (
+                              <TouchableOpacity
+                                onPress={clearDiseaseDiagnoseImage}
+                                disabled={uploadingDiseaseDiagnoseImage}
+                                className="px-4 py-2.5 rounded-xl border border-red-200 bg-red-50"
+                                activeOpacity={0.85}
+                              >
+                                <Text className="text-red-700 text-xs font-extrabold">Xóa ảnh</Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                          <FormInput
+                            name="diseaseDiagnoseImage"
+                            label="Hoặc dán URL ảnh"
+                            placeholder="https://..."
+                            maxLength={2000}
+                          />
+                        </View>
+                        <FormTextarea
+                          name="diseaseTestRelated"
+                          label="Xét nghiệm liên quan"
+                          placeholder="Mô tả xét nghiệm liên quan"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormTextarea
+                          name="diseaseTreatmentMethods"
+                          label="Phương pháp điều trị"
+                          placeholder="Mô tả phương pháp điều trị"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormNumericInput
+                          name="diseaseTreatmentTimeDay"
+                          label="Thời gian điều trị (ngày)"
+                          type="integer"
+                          placeholder="Số ngày điều trị"
+                          helperText="Số nguyên ≥ 0"
+                        />
+                        <FormTextarea
+                          name="diseaseDrugResistance"
+                          label="Kháng thuốc"
+                          placeholder="Mô tả tình trạng kháng thuốc"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                        <FormTextarea
+                          name="diseaseRelapse"
+                          label="Tái phát"
+                          placeholder="Mô tả tình trạng tái phát"
+                          minHeight={80}
+                          maxLength={MAX_TEXTAREA_LENGTH}
+                        />
+                      </>
+                    ) : (
+                      <FormInfoBox>
+                        Đã chọn {SERVICE_TYPE_MAPPER[selectedServiceType] || selectedServiceType}. Nhập thông tin nhóm phù hợp theo nghiệp vụ.
+                      </FormInfoBox>
+                    )}
+                  </>
+                )}
+
+                {(!isStepFormMode || currentFormStep === 6) && (
+                  <>
+                    <Text className="text-slate-700 text-[13px] font-bold mb-2 mt-3">Ghi chú</Text>
+                    <FormTextarea
+                      name="specifyNote"
+                      label="Ghi chú phiếu"
+                      placeholder="Nhập ghi chú cho phiếu chỉ định (nếu có)"
+                      minHeight={90}
+                      maxLength={MAX_NOTE_LENGTH}
+                      helperText={`Tối đa ${MAX_NOTE_LENGTH} ký tự`}
+                    />
+                  </>
+                )}
+              </View>
             )}
-            </View>
-          )}
           </ScrollView>
 
           <View className="p-4 bg-white border-t border-sky-100">
-          {isQuickMode ? (
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => router.back()}
-                disabled={createMutation.isPending}
-                className="flex-1 p-4 rounded-2xl bg-slate-100 border border-slate-200 items-center justify-center"
-                activeOpacity={0.85}
-              >
-                <Text className="text-slate-700 text-base font-extrabold">Huỷ</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={createMutation.isPending}
-                className={`flex-1 p-4 rounded-2xl items-center justify-center ${
-                  createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
-                }`}
-                activeOpacity={0.85}
-              >
-                <Text className="text-white text-base font-extrabold">
-                  {createMutation.isPending ? "Đang tạo..." : "Tạo phiếu"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              {isStepFormMode ? (
-                <View className="flex-row gap-3">
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (currentFormStep === 1) {
-                        router.back();
-                        return;
-                      }
-                      setCurrentFormStep((prev) => Math.max(prev - 1, 1));
-                    }}
-                    disabled={createMutation.isPending}
-                    className="flex-1 p-4 rounded-2xl bg-slate-100 border border-slate-200 items-center justify-center"
-                    activeOpacity={0.85}
-                  >
-                    <Text className="text-slate-700 text-base font-extrabold">
-                      {currentFormStep === 1 ? "Huỷ" : "Quay lại"}
-                    </Text>
-                  </TouchableOpacity>
-                  {currentFormStep < SPECIFY_FORM_STEP_COUNT ? (
-                    <TouchableOpacity
-                      onPress={handleNextWizardStep}
-                      disabled={createMutation.isPending}
-                      className="flex-1 p-4 rounded-2xl items-center justify-center bg-sky-600"
-                      activeOpacity={0.85}
-                    >
-                      <Text className="text-white text-base font-extrabold">Tiếp theo</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                      onPress={handleSubmit}
-                      disabled={createMutation.isPending}
-                      className={`flex-1 p-4 rounded-2xl items-center justify-center ${
-                        createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
-                      }`}
-                      activeOpacity={0.85}
-                    >
-                      <Text className="text-white text-base font-extrabold">
-                        {createMutation.isPending
-                          ? isEditMode
-                            ? "Đang cập nhật..."
-                            : "Đang tạo..."
-                          : isEditMode
-                          ? "Cập nhật phiếu"
-                          : "Tạo mới"}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ) : (
+            {isQuickMode ? (
+              <View className="flex-row gap-3">
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  disabled={createMutation.isPending}
+                  className="flex-1 p-4 rounded-2xl bg-slate-100 border border-slate-200 items-center justify-center"
+                  activeOpacity={0.85}
+                >
+                  <Text className="text-slate-700 text-base font-extrabold">Huỷ</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSubmit}
                   disabled={createMutation.isPending}
-                  className={`p-4 rounded-2xl flex-row items-center justify-center ${
-                    createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
-                  }`}
+                  className={`flex-1 p-4 rounded-2xl items-center justify-center ${createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
+                    }`}
                   activeOpacity={0.85}
                 >
                   <Text className="text-white text-base font-extrabold">
-                    {createMutation.isPending
-                      ? isEditMode
-                        ? "Đang cập nhật..."
-                        : "Đang tạo..."
-                      : isEditMode
-                      ? "Cập nhật phiếu"
-                      : "Tạo mới"}
+                    {createMutation.isPending ? "Đang tạo..." : "Tạo phiếu"}
                   </Text>
                 </TouchableOpacity>
-              )}
-            </>
-          )}
+              </View>
+            ) : (
+              <>
+                {isStepFormMode ? (
+                  <View className="flex-row gap-3">
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (currentFormStep === 1) {
+                          router.back();
+                          return;
+                        }
+                        setCurrentFormStep((prev) => Math.max(prev - 1, 1));
+                      }}
+                      disabled={createMutation.isPending}
+                      className="flex-1 p-4 rounded-2xl bg-slate-100 border border-slate-200 items-center justify-center"
+                      activeOpacity={0.85}
+                    >
+                      <Text className="text-slate-700 text-base font-extrabold">
+                        {currentFormStep === 1 ? "Huỷ" : "Quay lại"}
+                      </Text>
+                    </TouchableOpacity>
+                    {currentFormStep < SPECIFY_FORM_STEP_COUNT ? (
+                      <TouchableOpacity
+                        onPress={handleNextWizardStep}
+                        disabled={createMutation.isPending}
+                        className="flex-1 p-4 rounded-2xl items-center justify-center bg-sky-600"
+                        activeOpacity={0.85}
+                      >
+                        <Text className="text-white text-base font-extrabold">Tiếp theo</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={handleSubmit}
+                        disabled={createMutation.isPending}
+                        className={`flex-1 p-4 rounded-2xl items-center justify-center ${createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
+                          }`}
+                        activeOpacity={0.85}
+                      >
+                        <Text className="text-white text-base font-extrabold">
+                          {createMutation.isPending
+                            ? isEditMode
+                              ? "Đang cập nhật..."
+                              : "Đang tạo..."
+                            : isEditMode
+                              ? "Cập nhật phiếu"
+                              : "Tạo mới"}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    disabled={createMutation.isPending}
+                    className={`p-4 rounded-2xl flex-row items-center justify-center ${createMutation.isPending ? "bg-slate-300" : "bg-sky-600"
+                      }`}
+                    activeOpacity={0.85}
+                  >
+                    <Text className="text-white text-base font-extrabold">
+                      {createMutation.isPending
+                        ? isEditMode
+                          ? "Đang cập nhật..."
+                          : "Đang tạo..."
+                        : isEditMode
+                          ? "Cập nhật phiếu"
+                          : "Tạo mới"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
