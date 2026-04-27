@@ -148,6 +148,70 @@ function uploadImageToCloudinaryXHR(
   });
 }
 
+function uploadFileToCloudinaryXHR(
+  fileUri: string,
+  uploadUrl: string,
+  uploadPreset: string,
+  opts?: { folder?: string; fileName?: string; mimeType?: string }
+): Promise<CloudinaryUploadResult> {
+  const normalized = normalizeLocalFileUri(fileUri);
+  const fileName = String(opts?.fileName || '').trim();
+  const mimeType = String(opts?.mimeType || '').trim();
+  const nameFromUri = normalized.split('/').pop() || 'upload';
+  const finalName = fileName || nameFromUri || 'upload';
+  const ext = finalName.includes('.') ? finalName.split('.').pop()?.toLowerCase() : undefined;
+  const fallbackMime =
+    ext === 'pdf'
+      ? 'application/pdf'
+      : ext === 'png'
+        ? 'image/png'
+        : ext === 'jpg' || ext === 'jpeg'
+          ? 'image/jpeg'
+          : ext === 'webp'
+            ? 'image/webp'
+            : 'application/octet-stream';
+  const type = mimeType || fallbackMime;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', uploadUrl);
+    xhr.timeout = 120_000;
+    xhr.responseType = 'text';
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        try {
+          const err = JSON.parse(xhr.responseText || '{}') as { error?: { message?: string } };
+          reject(new Error(err.error?.message || `Upload failed: ${xhr.status}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+        return;
+      }
+      try {
+        const data = JSON.parse(xhr.responseText || '{}') as Record<string, unknown>;
+        resolve(parseCloudinaryJson(data));
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error('Invalid Cloudinary response'));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Lỗi mạng khi tải file lên Cloudinary'));
+    xhr.ontimeout = () => reject(new Error('Hết thời gian khi tải file lên Cloudinary'));
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: normalized,
+      type,
+      name: finalName,
+    } as any);
+    formData.append('upload_preset', uploadPreset);
+    const uploadFolder = opts?.folder;
+    if (uploadFolder) {
+      formData.append('folder', uploadFolder);
+    }
+    xhr.send(formData as any);
+  });
+}
+
 export const uploadImageToCloudinary = async (
   imageUri: string,
   options?: { folder?: string }
@@ -208,6 +272,69 @@ export const uploadImageToCloudinary = async (
       throw new Error(
         xhrErr instanceof Error ? xhrErr.message : 'Không thể tải hóa đơn lên Cloudinary'
       );
+    }
+  }
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { error?: { message?: string } };
+    throw new Error(
+      errorData.error?.message || `Upload failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = (await response.json()) as Record<string, unknown>;
+  return parseCloudinaryJson(data);
+};
+
+/**
+ * Upload generic files (PDF/images) to Cloudinary.
+ * Used for invoice uploads (can be PDF) across multiple screens.
+ */
+export const uploadFileToCloudinary = async (
+  fileUri: string,
+  options?: { folder?: string; fileName?: string; mimeType?: string }
+): Promise<CloudinaryUploadResult> => {
+  const config = await fetchCloudinaryConfigFromApi();
+  const { cloudName, uploadPreset, folder } = config;
+  const normalizedUri = normalizeLocalFileUri(fileUri);
+  const uploadFolder = options?.folder || folder;
+
+  const formData = new FormData();
+  if (Platform.OS === 'web' && normalizedUri.startsWith('blob:')) {
+    const blob = await fetch(normalizedUri).then((r) => r.blob());
+    const name = options?.fileName || `invoice.${blob.type === 'application/pdf' ? 'pdf' : 'bin'}`;
+    formData.append('file', blob, name);
+  } else {
+    const nameFromUri = normalizedUri.split('/').pop() || 'invoice';
+    formData.append('file', {
+      uri: normalizedUri,
+      type: options?.mimeType || 'application/octet-stream',
+      name: options?.fileName || nameFromUri,
+    } as any);
+  }
+  formData.append('upload_preset', uploadPreset);
+  if (uploadFolder) {
+    formData.append('folder', uploadFolder);
+  }
+
+  // Use resource_type=auto so PDF uploads work.
+  const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+  let response: Response;
+  try {
+    response = await fetch(uploadUrl, { method: 'POST', body: formData });
+  } catch (fetchErr: unknown) {
+    const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+    console.warn('[Cloudinary] fetch multipart failed, try XHR:', msg);
+    try {
+      return await uploadFileToCloudinaryXHR(normalizedUri, uploadUrl, uploadPreset, {
+        folder: uploadFolder,
+        fileName: options?.fileName,
+        mimeType: options?.mimeType,
+      });
+    } catch (xhrErr) {
+      console.error('[Cloudinary] XHR upload error:', xhrErr);
+      throw new Error(xhrErr instanceof Error ? xhrErr.message : 'Không thể tải file lên Cloudinary');
     }
   }
 

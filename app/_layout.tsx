@@ -8,7 +8,7 @@ import {
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { LogBox, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -18,6 +18,14 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { FeedbackModalProvider } from '@/contexts/FeedbackModalContext';
 
 SplashScreen.preventAutoHideAsync();
+
+// Hide all in-app log overlays (LogBox) and silence console output.
+// This keeps the UI clean for end users and prevents redbox-like noise in dev.
+LogBox.ignoreAllLogs();
+console.log = () => {};
+console.info = () => {};
+console.warn = () => {};
+console.error = () => {};
 
 const STALE_TIME = 60 * 1000;
 
@@ -74,7 +82,7 @@ const queryClient = createQueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerBackTitle: 'Quay lại' }}>
+    <Stack screenOptions={{ headerBackTitle: 'Quay lại', headerShown: false }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="customer" options={{ headerShown: false }} />
       <Stack.Screen name="staff" options={{ headerShown: false }} />

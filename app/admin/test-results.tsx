@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
-import { useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   ExternalLink,
@@ -14,7 +14,7 @@ import {
   RotateCcw,
   Folder,
 } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -197,6 +197,7 @@ export default function AdminTestResultsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{ q?: string }>();
 
   /** Web: chỉ bác sĩ; màn này chủ yếu ROLE_ADMIN — cho phép BS/KTV lab nếu sau này mở quyền truy cập */
   const canRequestRerunSample =
@@ -215,6 +216,11 @@ export default function AdminTestResultsScreen() {
   const [bulkPickedFiles, setBulkPickedFiles] = useState<PickedReportFile[]>([]);
   const [bulkUploading, setBulkUploading] = useState(false);
   const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0 });
+
+  useEffect(() => {
+    const q = typeof params.q === "string" ? params.q.trim() : "";
+    if (q) setSearchQuery(q);
+  }, [params.q]);
 
   const {
     data: ordersRaw,
@@ -825,6 +831,7 @@ export default function AdminTestResultsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f9ff" }} edges={["top", "left", "right"]}>
+      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="dark-content" />
 
       <View className="pb-3 px-4 bg-white border-b border-sky-100">

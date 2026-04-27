@@ -10,6 +10,7 @@ import React, {
 } from "react";
 
 import { isStaffSideRole } from "@/constants/roles";
+import { API_ENDPOINTS } from "@/config/api";
 import { ROOT_HREF } from "@/lib/router-href";
 import { apiClient } from "@/services/api";
 import { customerService } from "@/services/customerService";
@@ -79,6 +80,7 @@ export type AuthContextValue = {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (updatedUserData: Partial<User>) => Promise<void>;
+  updateUserProfile: (payload: Record<string, unknown>) => Promise<boolean>;
   clearAuthError: () => void;
   canCreatePrescriptionSlip: () => boolean;
 };
@@ -389,6 +391,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  const updateUserProfile = useCallback(
+    async (payload: Record<string, unknown>): Promise<boolean> => {
+      try {
+        const res = await apiClient.put(API_ENDPOINTS.USER_PROFILE, payload);
+        if (!res.success) return false;
+
+        // Re-fetch user (authoritative) and persist into storage/state.
+        const me = await apiClient.getCurrentUser();
+        if (me.success && me.data) {
+          const hospitalUser = (me.data as any).hospitalUser;
+          if (hospitalUser) {
+            const userData = mapHospitalUserToUser(hospitalUser);
+            await AsyncStorage.setItem("user", JSON.stringify(userData));
+            setUser(userData);
+          }
+        }
+        return true;
+      } catch (e) {
+        console.error("[AuthContext] updateUserProfile error:", e);
+        return false;
+      }
+    },
+    [],
+  );
+
   const clearAuthError = () => {
     setAuthError(null);
   };
@@ -417,6 +444,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     updateUser,
+    updateUserProfile,
     clearAuthError,
     canCreatePrescriptionSlip,
   };

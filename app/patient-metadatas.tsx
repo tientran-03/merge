@@ -168,7 +168,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
   specifyId: string,
   approvedLabcode: string,
   sender?: ApproveSender | null,
-): Promise<void> {
+): Promise<{ transitioned: boolean; orderId?: string }> {
   const metadataRes = await patientMetadataService.getBySpecifyId(specifyId);
   if (!metadataRes.success || !Array.isArray(metadataRes.data) || metadataRes.data.length === 0) {
     throw new Error(`Không lấy được danh sách mẫu của phiếu ${specifyId}.`);
@@ -191,7 +191,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
         ).length,
       }),
     );
-    return;
+    return { transitioned: false };
   }
 
   const order = await pickFirstOrderBySpecify(specifyId);
@@ -205,7 +205,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
     ost === "result_approved" ||
     ost === "completed"
   ) {
-    return;
+    return { transitioned: true, orderId: order.orderId };
   }
 
   const sp = await specifyVoteTestService.updateStatus(specifyId, "awaiting_results_approval");
@@ -247,6 +247,8 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
       console.warn("[patient-metadatas] notify doctor (AWAITING_RESULTS_APPROVAL):", e);
     }
   }
+
+  return { transitioned: true, orderId: order.orderId };
 }
 
 export default function PatientMetadatasScreen() {
@@ -767,7 +769,7 @@ export default function PatientMetadatasScreen() {
               }
               const sid = String(metadata.specifyId || "").trim();
               if (sid) {
-                await syncSpecifyAndOrderWhenAllSamplesCompleted(sid, metadata.labcode, {
+                const synced = await syncSpecifyAndOrderWhenAllSamplesCompleted(sid, metadata.labcode, {
                   id: user?.id || "",
                   name: user?.name || "",
                   role: user?.role,
@@ -776,6 +778,14 @@ export default function PatientMetadatasScreen() {
                 queryClient.invalidateQueries({ queryKey: ["admin-test-results-orders"] });
                 queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
                 queryClient.invalidateQueries({ queryKey: ["orders"] });
+
+                // Với role admin: nếu đã đủ điều kiện chuyển sang giai đoạn trả KQ thì điều hướng luôn.
+                if (user?.role === ROLE_ADMIN && synced.transitioned) {
+                  router.push({
+                    pathname: "/admin/test-results",
+                    params: { q: synced.orderId || "" },
+                  } as any);
+                }
               }
               Alert.alert(
                 "Thành công",

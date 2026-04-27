@@ -64,7 +64,7 @@ export default function AdminHomeScreen() {
       id: "1",
       title: "Quản lý\nngười dùng",
       icon: <Image
-            source={require("@/assets/images/7.png")}
+            source={require("@/assets/staff/i12_danh_sach_khach_hang.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -74,7 +74,7 @@ export default function AdminHomeScreen() {
       id: "2",
       title: "Quản lý\ndịch vụ",
       icon: <Image
-            source={require("@/assets/images/4.png")}
+            source={require("@/assets/staff/i04_quan_ly_dich_vu.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -85,7 +85,7 @@ export default function AdminHomeScreen() {
       title: "Quản lý\nđơn hàng",
       icon: (
         <Image
-          source={require("@/assets/images/6.png")}
+          source={require("@/assets/staff/i06_danh_sach_don_hang.png")}
           className="w-16 h-16"
           resizeMode="contain"
         />
@@ -98,7 +98,7 @@ export default function AdminHomeScreen() {
       title: "Báo cáo\n& Thống kê",
       icon: (
         <Image
-          source={require("@/assets/images/5.png")}
+          source={require("@/assets/staff/i05_bao_cao_thong_ke.png")}
           className="w-16 h-16"
           resizeMode="contain"
         />
@@ -110,7 +110,7 @@ export default function AdminHomeScreen() {
       title: "Tạo\nhóa đơn",
       icon: (
         <Image
-          source={require("@/assets/images/6.png")}
+          source={require("@/assets/staff/i13_tao_hoa_don.png")}
           className="w-16 h-16"
           resizeMode="contain"
         />
@@ -121,7 +121,7 @@ export default function AdminHomeScreen() {
       id: "5",
       title: "Cấu hình\ncơ bản",
       icon: <Image
-            source={require("@/assets/images/3.png")}
+            source={require("@/assets/staff/i07_thong_tin_nguoi_dung.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -131,7 +131,7 @@ export default function AdminHomeScreen() {
       id: "6",
       title: "Phân quyền\n& vai trò",
       icon: <Image
-            source={require("@/assets/images/7.png")}
+            source={require("@/assets/staff/i07_thong_tin_nguoi_dung.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -141,7 +141,7 @@ export default function AdminHomeScreen() {
       id: "12",
       title: "Quản lý\nphiếu xét nghiệm",
       icon: <Image
-            source={require("@/assets/images/4.png")}
+            source={require("@/assets/staff/i08_quan_ly_phieu_xn.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -152,7 +152,7 @@ export default function AdminHomeScreen() {
       title: "Quản lý\ndữ liệu BN",
       icon: (
         <Image
-          source={require("@/assets/images/7.png")}
+          source={require("@/assets/staff/i10_quan_ly_mau_xet_nghiem.png")}
           className="w-16 h-16"
           resizeMode="contain"
         />
@@ -163,7 +163,7 @@ export default function AdminHomeScreen() {
       id: "13",
       title: "Quản lý\nquyền hạn",
       icon: <Image
-            source={require("@/assets/images/7.png")}
+            source={require("@/assets/staff/i07_thong_tin_nguoi_dung.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -173,7 +173,7 @@ export default function AdminHomeScreen() {
       id: "16",
       title: "Trả kết quả\nxét nghiệm",
       icon: <Image
-            source={require("@/assets/images/4.png")}
+            source={require("@/assets/staff/i08_quan_ly_phieu_xn.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -183,7 +183,7 @@ export default function AdminHomeScreen() {
       id: "8",
       title: "Giám sát\nhệ thống",
       icon: <Image
-            source={require("@/assets/images/2.png")}
+            source={require("@/assets/staff/i05_bao_cao_thong_ke.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -193,7 +193,7 @@ export default function AdminHomeScreen() {
       id: "15",
       title: "Quản lý\nlog hệ thống",
       icon: <Image
-            source={require("@/assets/images/2.png")}
+            source={require("@/assets/staff/i05_bao_cao_thong_ke.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -203,7 +203,7 @@ export default function AdminHomeScreen() {
       id: "9",
       title: "Quản lý\n tổ chức",
       icon: <Image
-            source={require("@/assets/images/3.png")}
+            source={require("@/assets/staff/i12_danh_sach_khach_hang.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -214,7 +214,7 @@ export default function AdminHomeScreen() {
       title: "Quản lý\nbarcode",
       icon: (
         <Image
-          source={require("@/assets/images/2.png")}
+          source={require("@/assets/staff/i14_quan_ly_barcode.png")}
           className="w-16 h-16"
           resizeMode="contain"
         />
@@ -225,7 +225,7 @@ export default function AdminHomeScreen() {
       id: "10",
       title: "Thông tin\nngười dùng",
       icon: <Image
-            source={require("@/assets/images/7.png")}
+            source={require("@/assets/staff/i07_thong_tin_nguoi_dung.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,
@@ -235,7 +235,7 @@ export default function AdminHomeScreen() {
       id: "11",
       title: "Đăng xuất",
       icon: <Image
-            source={require("@/assets/images/9.png")}
+            source={require("@/assets/staff/13_dang_xuat.png")}
             className="w-16 h-16"
             resizeMode="contain"
           />,

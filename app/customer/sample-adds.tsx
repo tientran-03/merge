@@ -410,7 +410,7 @@ export default function CustomerSampleAddsScreen() {
                   <MessageCircle size={16} color="#d97706" />
                   <Text className="text-[11px] font-extrabold text-amber-800 ml-1">Ghi chú</Text>
                 </TouchableOpacity>
-                {sa.invoiceLink ? (
+                {sa.invoiceLink && String(sa.paymentStatus || "").toUpperCase() === "COMPLETED" ? (
                   <TouchableOpacity
                     onPress={() => openInvoice(sa.invoiceLink!)}
                     className="flex-row items-center px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200"

@@ -2395,7 +2395,10 @@ export default function CreatePrescriptionSlipScreen() {
 
             <Text className="text-slate-700 text-[13px] font-bold mb-2">Thông tin người làm xét nghiệm</Text>
 
-            <FormFieldGroup>
+            {/* NOTE: Keep phone + name in 1 column.
+               2-column layout intermittently collapses after selecting a phone suggestion (autofill),
+               causing label/helper text to wrap vertically on iOS. */}
+            <View className="gap-3">
               <FormInput
                 name="patientPhone"
                 label="Số điện thoại"
@@ -2405,6 +2408,7 @@ export default function CreatePrescriptionSlipScreen() {
                 formatter={formatPhoneInput}
                 maxLength={10}
                 onFocus={() => setShowPatientPhoneSuggestions(true)}
+                onBlur={() => setShowPatientPhoneSuggestions(false)}
                 helperText={
                   isAutoFillingPatient
                     ? "Đang kiểm tra SĐT và tự động điền thông tin bệnh nhân..."
@@ -2424,17 +2428,28 @@ export default function CreatePrescriptionSlipScreen() {
                       activeOpacity={0.75}
                       className={`px-3 py-2.5 ${idx < patientPhoneSuggestions.length - 1 ? "border-b border-sky-100" : ""}`}
                       onPress={() => {
+                        // Move focus away from phone field after picking suggestion to avoid layout glitches
+                        // where the left column can momentarily collapse until a full re-layout.
                         methods.setValue("patientPhone", s.phone, {
                           shouldDirty: true,
                           shouldTouch: true,
                           shouldValidate: true,
                         });
                         setShowPatientPhoneSuggestions(false);
+                        requestAnimationFrame(() => {
+                          try {
+                            methods.setFocus("patientName");
+                          } catch {
+                            // ignore
+                          }
+                        });
                       }}
                     >
                       <Text className="text-[12px] font-extrabold text-slate-800">{s.phone}</Text>
                       {!!s.patientName && (
-                        <Text className="text-[11px] text-slate-600 mt-0.5">{s.patientName}</Text>
+                        <Text className="text-[11px] text-slate-600 mt-0.5" numberOfLines={2}>
+                          {s.patientName}
+                        </Text>
                       )}
                     </TouchableOpacity>
                   ))}
@@ -2448,7 +2463,7 @@ export default function CreatePrescriptionSlipScreen() {
                 maxLength={MAX_NAME_LENGTH}
                 formatter={formatPatientNameInput}
               />
-            </FormFieldGroup>
+            </View>
 
             <FormFieldGroup>
               <FormDatePicker

@@ -192,22 +192,46 @@ class ApiClient {
       if (!response.ok) {
         const errCode = (data as any)?.errorCode;
         const errMsg = String((data as any)?.error || (data as any)?.message || '').toLowerCase();
+        const isAuthLoginEndpoint =
+          endpoint?.includes('/api/auth/login') || endpoint?.includes('/api/auth/login/');
+        const isExpectedAuthFailure =
+          isAuthLoginEndpoint &&
+          (response.status === 400 ||
+            response.status === 401 ||
+            response.status === 403 ||
+            response.status === 404) &&
+          (String(errCode || '').startsWith('AUTH_') ||
+            errMsg.includes('email không tồn tại') ||
+            errMsg.includes('email khong ton tai') ||
+            errMsg.includes('không tồn tại trong hệ thống') ||
+            errMsg.includes('khong ton tai trong he thong') ||
+            errMsg.includes('sai mật khẩu') ||
+            errMsg.includes('sai mat khau') ||
+            errMsg.includes('invalid credentials') ||
+            errMsg.includes('unauthorized'));
         const isExpectedNotFound =
           response.status === 404 &&
           (errCode === 'PC_001' ||
             errCode === 'GTEST_001' ||
+            errCode === 'SPECIFY_001' ||
             // Patient lookup flows (e.g. by email/phone) may legitimately return 404.
             // Avoid console.error because React Native will show a red error overlay.
             errMsg.includes('không tìm thấy bệnh nhân') ||
             errMsg.includes('khong tim thay benh nhan') ||
             errMsg.includes('không tìm thấy xét nghiệm gen') ||
             errMsg.includes('khong tim thay xet nghiem gen') ||
+            errMsg.includes('không tìm thấy phiếu chỉ định') ||
+            errMsg.includes('khong tim thay phieu chi dinh') ||
             errMsg.includes('patient not found'));
         const isNoisyGenomeTestSystemError =
           errCode === 'SYSTEM_003' &&
           endpoint?.includes('/api/v1/genome-tests/') &&
           suppressNoisyGenomeTestUpdateLogs;
-        if (!isExpectedNotFound && !isNoisyGenomeTestSystemError) {
+        if (
+          !isExpectedNotFound &&
+          !isExpectedAuthFailure &&
+          !isNoisyGenomeTestSystemError
+        ) {
           console.error('API error response:', {
             status: response.status,
             statusText: response.statusText,
@@ -230,7 +254,8 @@ class ApiClient {
           if (validationErrors) {
             errorMessage = `${errorMessage}: ${validationErrors}`;
           }
-          console.error('Validation errors:', data.data);
+          // Validation errors are common for user input; avoid red error overlay noise.
+          console.warn('Validation errors:', data.data);
         }
 
         return {

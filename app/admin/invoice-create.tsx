@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { ChevronDown, FileDown } from "lucide-react-native";
@@ -679,10 +679,17 @@ export default function AdminInvoiceCreateScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-slate-50" contentContainerStyle={{ padding: 16, paddingBottom: 28 }}>
-      <View className="bg-white border border-slate-200 rounded-2xl p-4">
-        <Text className="text-[20px] font-extrabold text-slate-900">Tạo Hoá Đơn</Text>
-        <Text className="text-[13px] text-slate-500 mt-1">Tạo hoá đơn thanh toán cho dịch vụ xét nghiệm</Text>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <ScrollView
+        className="flex-1 bg-slate-50"
+        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+      >
+        <View className="bg-white border border-slate-200 rounded-2xl p-4">
+          <Text className="text-[20px] font-extrabold text-slate-900">Tạo Hoá Đơn</Text>
+          <Text className="text-[13px] text-slate-500 mt-1">
+            Tạo hoá đơn thanh toán cho dịch vụ xét nghiệm
+          </Text>
 
         <View className="flex-row gap-2 mt-5">
           <TouchableOpacity
@@ -1120,7 +1127,8 @@ export default function AdminInvoiceCreateScreen() {
         }}
         onClose={() => setActiveModal("")}
       />
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

@@ -2,45 +2,45 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import {
-  Search,
-  ChevronRight,
-  ArrowLeft,
-  Plus,
-  Zap,
-  Pencil,
-  X,
-  SlidersHorizontal,
-  Calendar,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  Clock,
   AlertCircle,
-  FileText,
-  FlaskConical,
-  CircleDot,
-  Send,
-  RotateCcw,
+  ArrowLeft,
   BadgeCheck,
-  Package,
-  Hourglass,
-  ShieldCheck,
   Ban,
-  Trash2,
-  CreditCard,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  CircleDot,
+  Clock,
   CloudUpload,
+  CreditCard,
+  FileText,
+  Filter,
+  FlaskConical,
+  Hourglass,
+  Package,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Search,
+  Send,
+  ShieldCheck,
+  SlidersHorizontal,
+  Trash2,
+  X,
+  XCircle,
+  Zap,
 } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
-  StatusBar,
   Alert,
   Modal,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -49,7 +49,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePaginatedQuery } from "@/hooks/usePaginatedQuery";
 import { consumeListFresh } from "@/lib/list-navigation-flags";
 import { getApiResponseData } from "@/lib/types/api-types";
-import { orderService, OrderResponse } from "@/services/orderService";
+import { OrderResponse, orderService } from "@/services/orderService";
 import { sampleAddService, type SampleAddResponse } from "@/services/sampleAddService";
 import {
   sampleAddServiceConfigService,
@@ -177,19 +177,19 @@ const ALL_ORDER_STATUS_UPDATE_OPTIONS: {
   label: string;
   icon: React.ComponentType<{ size?: number; color?: string }>;
 }[] = [
-  { value: "initiation", label: "Khởi tạo", icon: CircleDot },
-  { value: "forward_analysis", label: "Chuyển phân tích", icon: Send },
-  { value: "accepted", label: "Đã chấp nhận", icon: CheckCircle2 },
-  { value: "rejected", label: "Từ chối", icon: XCircle },
-  { value: "in_progress", label: "Đang xử lý", icon: Clock },
-  { value: "sample_error", label: "Lỗi mẫu", icon: AlertCircle },
-  { value: "rerun_testing", label: "Chạy lại", icon: RotateCcw },
-  { value: "completed", label: "Hoàn thành", icon: BadgeCheck },
-  { value: "sample_addition", label: "Bổ sung mẫu", icon: Package },
-  { value: "awaiting_results_approval", label: "Chờ duyệt kết quả", icon: Hourglass },
-  { value: "results_approved", label: "Đã duyệt kết quả", icon: ShieldCheck },
-  { value: "canceled", label: "Đã hủy", icon: Ban },
-];
+    { value: "initiation", label: "Khởi tạo", icon: CircleDot },
+    { value: "forward_analysis", label: "Chuyển phân tích", icon: Send },
+    { value: "accepted", label: "Đã chấp nhận", icon: CheckCircle2 },
+    { value: "rejected", label: "Từ chối", icon: XCircle },
+    { value: "in_progress", label: "Đang xử lý", icon: Clock },
+    { value: "sample_error", label: "Lỗi mẫu", icon: AlertCircle },
+    { value: "rerun_testing", label: "Chạy lại", icon: RotateCcw },
+    { value: "completed", label: "Hoàn thành", icon: BadgeCheck },
+    { value: "sample_addition", label: "Bổ sung mẫu", icon: Package },
+    { value: "awaiting_results_approval", label: "Chờ duyệt kết quả", icon: Hourglass },
+    { value: "results_approved", label: "Đã duyệt kết quả", icon: ShieldCheck },
+    { value: "canceled", label: "Đã hủy", icon: Ban },
+  ];
 
 function FilterPill({
   label,
@@ -204,9 +204,8 @@ function FilterPill({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      className={`px-3 py-2 rounded-full border ${
-        active ? "bg-sky-600 border-sky-600" : "bg-white border-sky-100"
-      }`}
+      className={`px-3 py-2 rounded-full border ${active ? "bg-sky-600 border-sky-600" : "bg-white border-sky-100"
+        }`}
     >
       <Text className={`text-xs font-extrabold ${active ? "text-white" : "text-slate-600"}`}>
         {label}
@@ -656,8 +655,8 @@ export default function AdminOrdersScreen() {
           headerStyle: { backgroundColor: "#0891b2" },
           headerTintColor: "#fff",
           headerLeft: () => (
-            <TouchableOpacity 
-              onPress={() => router.push("/admin-home")} 
+            <TouchableOpacity
+              onPress={() => router.push("/admin-home")}
               className="ml-2"
               activeOpacity={0.7}
             >
@@ -699,9 +698,9 @@ export default function AdminOrdersScreen() {
             onPress={() =>
               listMode === "orders"
                 ? router.push({
-                    pathname: "/create-order",
-                    params: { source: "admin" },
-                  })
+                  pathname: "/create-order",
+                  params: { source: "admin" },
+                })
                 : router.push("/new-sample-add")
             }
             className="w-10 h-10 rounded-xl bg-emerald-600 items-center justify-center mr-2"
@@ -713,13 +712,12 @@ export default function AdminOrdersScreen() {
           <TouchableOpacity
             onPress={() => listMode === "orders" && setShowFilters((v) => !v)}
             disabled={listMode !== "orders"}
-            className={`w-10 h-10 rounded-xl border items-center justify-center relative ${
-              listMode !== "orders"
+            className={`w-10 h-10 rounded-xl border items-center justify-center relative ${listMode !== "orders"
                 ? "bg-slate-100 border-slate-200 opacity-40"
                 : showFilters
                   ? "bg-sky-600 border-sky-600"
                   : "bg-sky-50 border-sky-200"
-            }`}
+              }`}
             activeOpacity={0.85}
           >
             <SlidersHorizontal
@@ -736,24 +734,21 @@ export default function AdminOrdersScreen() {
 
         <View className="flex-row gap-2 mb-3">
           <TouchableOpacity
-            className={`flex-1 rounded-xl py-2.5 px-2 border ${
-              listMode === "orders" ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
-            }`}
+            className={`flex-1 rounded-xl py-2.5 px-2 border ${listMode === "orders" ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
+              }`}
             onPress={() => setListMode("orders")}
             activeOpacity={0.85}
           >
             <Text
-              className={`text-center text-[12px] font-extrabold ${
-                listMode === "orders" ? "text-white" : "text-slate-600"
-              }`}
+              className={`text-center text-[12px] font-extrabold ${listMode === "orders" ? "text-white" : "text-slate-600"
+                }`}
             >
               Đơn hàng
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`flex-1 rounded-xl py-2.5 px-2 border ${
-              listMode === "sample_adds" ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
-            }`}
+            className={`flex-1 rounded-xl py-2.5 px-2 border ${listMode === "sample_adds" ? "bg-sky-600 border-sky-600" : "bg-white border-slate-200"
+              }`}
             onPress={() => {
               setListMode("sample_adds");
               setShowFilters(false);
@@ -761,9 +756,8 @@ export default function AdminOrdersScreen() {
             activeOpacity={0.85}
           >
             <Text
-              className={`text-center text-[12px] font-extrabold ${
-                listMode === "sample_adds" ? "text-white" : "text-slate-600"
-              }`}
+              className={`text-center text-[12px] font-extrabold ${listMode === "sample_adds" ? "text-white" : "text-slate-600"
+                }`}
             >
               Mẫu bổ sung
             </Text>
@@ -923,139 +917,139 @@ export default function AdminOrdersScreen() {
       >
         {listMode === "orders" ? (
           dayKeys.length === 0 ? (
-          <View className="pt-12 items-center px-6">
-            <View className="w-14 h-14 rounded-2xl bg-sky-100 items-center justify-center border border-sky-200">
-              <Search size={24} color="#0284C7" />
-            </View>
-            <Text className="mt-4 text-base font-extrabold text-slate-900">Không có đơn hàng</Text>
-            <Text className="mt-2 text-xs font-bold text-slate-500 text-center">
-              Thử đổi bộ lọc hoặc từ khóa tìm kiếm.
-            </Text>
-          </View>
-        ) : (
-          dayKeys.map((date) => (
-            <View key={date} className="mb-6">
-              <View className="flex-row items-center justify-between mb-3">
-                <Text className="text-[15px] font-extrabold text-slate-900">{date}</Text>
-                <View className="px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200">
-                  <Text className="text-xs font-extrabold text-sky-700">{groupedOrders[date].length}</Text>
-                </View>
+            <View className="pt-12 items-center px-6">
+              <View className="w-14 h-14 rounded-2xl bg-sky-100 items-center justify-center border border-sky-200">
+                <Search size={24} color="#0284C7" />
               </View>
+              <Text className="mt-4 text-base font-extrabold text-slate-900">Không có đơn hàng</Text>
+              <Text className="mt-2 text-xs font-bold text-slate-500 text-center">
+                Thử đổi bộ lọc hoặc từ khóa tìm kiếm.
+              </Text>
+            </View>
+          ) : (
+            dayKeys.map((date) => (
+              <View key={date} className="mb-6">
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-[15px] font-extrabold text-slate-900">{date}</Text>
+                  <View className="px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200">
+                    <Text className="text-xs font-extrabold text-sky-700">{groupedOrders[date].length}</Text>
+                  </View>
+                </View>
 
-              {groupedOrders[date].map((order) => {
-                const statusBadge = getStatusBadge(order.orderStatus || "");
-                const paymentMeta = getPaymentStatusMeta(order.paymentStatus);
+                {groupedOrders[date].map((order) => {
+                  const statusBadge = getStatusBadge(order.orderStatus || "");
+                  const paymentMeta = getPaymentStatusMeta(order.paymentStatus);
 
-                return (
-                  <TouchableOpacity
-                    key={order.orderId}
-                    className="bg-white rounded-2xl p-4 mb-3 border border-sky-100"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/order-detail",
-                        params: { orderId: order.orderId },
-                      })
-                    }
-                    activeOpacity={0.85}
-                  >
-                    <View className="flex-row items-center justify-between mb-2">
-                      <View className="flex-1 pr-2">
-                        <Text className="text-xs font-extrabold text-sky-700" numberOfLines={1}>
-                          {order.orderId}
-                        </Text>
-                        <Text className="text-[10px] font-bold text-slate-500 mt-0.5" numberOfLines={1}>
-                          {formatDate(order.createdAt)}
-                        </Text>
+                  return (
+                    <TouchableOpacity
+                      key={order.orderId}
+                      className="bg-white rounded-2xl p-4 mb-3 border border-sky-100"
+                      onPress={() =>
+                        router.push({
+                          pathname: "/order-detail",
+                          params: { orderId: order.orderId },
+                        })
+                      }
+                      activeOpacity={0.85}
+                    >
+                      <View className="flex-row items-center justify-between mb-2">
+                        <View className="flex-1 pr-2">
+                          <Text className="text-xs font-extrabold text-sky-700" numberOfLines={1}>
+                            {order.orderId}
+                          </Text>
+                          <Text className="text-[10px] font-bold text-slate-500 mt-0.5" numberOfLines={1}>
+                            {formatDate(order.createdAt)}
+                          </Text>
+                        </View>
+
+                        <TouchableOpacity
+                          className={`px-2.5 py-1 rounded-full border ${statusBadge.bg} ${statusBadge.bd}`}
+                          onPress={(e: any) => {
+                            e?.stopPropagation?.();
+                            handleUpdateStatus(order);
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                          activeOpacity={0.8}
+                        >
+                          <Text className={`text-xs font-extrabold ${statusBadge.fg}`}>{statusBadge.label}</Text>
+                        </TouchableOpacity>
                       </View>
 
-                      <TouchableOpacity
-                        className={`px-2.5 py-1 rounded-full border ${statusBadge.bg} ${statusBadge.bd}`}
-                        onPress={(e: any) => {
-                          e?.stopPropagation?.();
-                          handleUpdateStatus(order);
-                        }}
-                        disabled={updateStatusMutation.isPending}
-                        activeOpacity={0.8}
-                      >
-                        <Text className={`text-xs font-extrabold ${statusBadge.fg}`}>{statusBadge.label}</Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <Text className="mt-2 text-[14px] font-extrabold text-slate-900" numberOfLines={2}>
-                      {order.orderName}
-                    </Text>
-
-                    <View className="mt-2 flex-row items-center flex-wrap">
-                      {typeof order.paymentAmount === "number" && order.paymentAmount > 0 && (
-                        <>
-                          <Text className="text-sm font-extrabold text-slate-900">
-                            {formatCurrency(order.paymentAmount)} VND
-                          </Text>
-                          <Text className="mx-2 text-slate-300">•</Text>
-                        </>
-                      )}
-
-                      {order.specifyId?.hospital?.hospitalName && (
-                        <>
-                          <Text className="text-xs font-bold text-slate-600" numberOfLines={1}>
-                            {order.specifyId.hospital.hospitalName}
-                          </Text>
-                          <Text className="mx-2 text-slate-300">•</Text>
-                        </>
-                      )}
-
-                      <View className={`px-2 py-0.5 rounded-full border ${paymentMeta.bg} ${paymentMeta.bd}`}>
-                        <Text className={`text-[10px] font-extrabold ${paymentMeta.fg}`}>{paymentMeta.label}</Text>
-                      </View>
-                    </View>
-
-                    <View className="mt-3 flex-row items-center justify-between">
-                      <Text className="text-xs font-bold text-slate-500" numberOfLines={1}>
-                        {order.customerName || order.specifyId?.patient?.patientName || ""}
+                      <Text className="mt-2 text-[14px] font-extrabold text-slate-900" numberOfLines={2}>
+                        {order.orderName}
                       </Text>
 
-                      <View className="flex-row gap-2">
-                        {isPaymentCompleted(order.paymentStatus) ? (
+                      <View className="mt-2 flex-row items-center flex-wrap">
+                        {typeof order.paymentAmount === "number" && order.paymentAmount > 0 && (
+                          <>
+                            <Text className="text-sm font-extrabold text-slate-900">
+                              {formatCurrency(order.paymentAmount)} VND
+                            </Text>
+                            <Text className="mx-2 text-slate-300">•</Text>
+                          </>
+                        )}
+
+                        {order.specifyId?.hospital?.hospitalName && (
+                          <>
+                            <Text className="text-xs font-bold text-slate-600" numberOfLines={1}>
+                              {order.specifyId.hospital.hospitalName}
+                            </Text>
+                            <Text className="mx-2 text-slate-300">•</Text>
+                          </>
+                        )}
+
+                        <View className={`px-2 py-0.5 rounded-full border ${paymentMeta.bg} ${paymentMeta.bd}`}>
+                          <Text className={`text-[10px] font-extrabold ${paymentMeta.fg}`}>{paymentMeta.label}</Text>
+                        </View>
+                      </View>
+
+                      <View className="mt-3 flex-row items-center justify-between">
+                        <Text className="text-xs font-bold text-slate-500" numberOfLines={1}>
+                          {order.customerName || order.specifyId?.patient?.patientName || ""}
+                        </Text>
+
+                        <View className="flex-row gap-2">
+                          {isPaymentCompleted(order.paymentStatus) ? (
+                            <TouchableOpacity
+                              className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-200 items-center justify-center"
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                router.push({
+                                  pathname: "/invoice",
+                                  params: { orderId: order.orderId },
+                                } as any);
+                              }}
+                              activeOpacity={0.85}
+                            >
+                              <FileText size={16} color="#7C3AED" />
+                            </TouchableOpacity>
+                          ) : null}
+
                           <TouchableOpacity
-                            className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-200 items-center justify-center"
+                            className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 items-center justify-center"
                             onPress={(e) => {
                               e.stopPropagation();
                               router.push({
-                                pathname: "/invoice",
-                                params: { orderId: order.orderId },
-                              } as any);
+                                pathname: "/update-order-wizard",
+                                params: { orderId: order.orderId, source: "admin" },
+                              });
                             }}
                             activeOpacity={0.85}
                           >
-                            <FileText size={16} color="#7C3AED" />
+                            <Pencil size={16} color="#059669" />
                           </TouchableOpacity>
-                        ) : null}
 
-                        <TouchableOpacity
-                          className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 items-center justify-center"
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            router.push({
-                              pathname: "/update-order-wizard",
-                              params: { orderId: order.orderId, source: "admin" },
-                            });
-                          }}
-                          activeOpacity={0.85}
-                        >
-                          <Pencil size={16} color="#059669" />
-                        </TouchableOpacity>
-
-                        <View className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 items-center justify-center">
-                          <ChevronRight size={18} color="#0284C7" />
+                          <View className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 items-center justify-center">
+                            <ChevronRight size={18} color="#0284C7" />
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ))
-        )
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))
+          )
         ) : sampleAddsError ? (
           <View className="pt-12 items-center px-6">
             <Text className="text-base font-extrabold text-slate-900 text-center">Không tải được mẫu bổ sung</Text>
@@ -1186,7 +1180,7 @@ export default function AdminOrdersScreen() {
                         </TouchableOpacity>
 
                         {String(sa.paymentType || "").toUpperCase() !== "CASH" &&
-                        !isPaymentCompleted(sa.paymentStatus) ? (
+                          !isPaymentCompleted(sa.paymentStatus) ? (
                           <TouchableOpacity
                             className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 items-center justify-center"
                             onPress={(e) => {
@@ -1293,35 +1287,31 @@ export default function AdminOrdersScreen() {
             <Text className="text-xs font-bold text-slate-600 mb-1">Hình thức thanh toán</Text>
             <View className="flex-row gap-2 mb-4">
               <TouchableOpacity
-                className={`flex-1 rounded-xl px-3 py-2.5 border ${
-                  editingPaymentType === "CASH"
+                className={`flex-1 rounded-xl px-3 py-2.5 border ${editingPaymentType === "CASH"
                     ? "bg-sky-600 border-sky-600"
                     : "bg-white border-slate-200"
-                }`}
+                  }`}
                 onPress={() => setEditingPaymentType("CASH")}
                 activeOpacity={0.85}
               >
                 <Text
-                  className={`text-center text-xs font-extrabold ${
-                    editingPaymentType === "CASH" ? "text-white" : "text-slate-700"
-                  }`}
+                  className={`text-center text-xs font-extrabold ${editingPaymentType === "CASH" ? "text-white" : "text-slate-700"
+                    }`}
                 >
                   Tiền mặt
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                className={`flex-1 rounded-xl px-3 py-2.5 border ${
-                  editingPaymentType === "ONLINE_PAYMENT"
+                className={`flex-1 rounded-xl px-3 py-2.5 border ${editingPaymentType === "ONLINE_PAYMENT"
                     ? "bg-sky-600 border-sky-600"
                     : "bg-white border-slate-200"
-                }`}
+                  }`}
                 onPress={() => setEditingPaymentType("ONLINE_PAYMENT")}
                 activeOpacity={0.85}
               >
                 <Text
-                  className={`text-center text-xs font-extrabold ${
-                    editingPaymentType === "ONLINE_PAYMENT" ? "text-white" : "text-slate-700"
-                  }`}
+                  className={`text-center text-xs font-extrabold ${editingPaymentType === "ONLINE_PAYMENT" ? "text-white" : "text-slate-700"
+                    }`}
                 >
                   Online
                 </Text>
@@ -1433,9 +1423,8 @@ export default function AdminOrdersScreen() {
                 return (
                   <TouchableOpacity
                     key={status.value}
-                    className={`flex-row items-center p-3 rounded-xl mb-2 border ${
-                      isCurrent ? "bg-sky-50 border-sky-300" : "bg-white border-slate-200"
-                    }`}
+                    className={`flex-row items-center p-3 rounded-xl mb-2 border ${isCurrent ? "bg-sky-50 border-sky-300" : "bg-white border-slate-200"
+                      }`}
                     onPress={() => {
                       if (!isCurrent && !updateStatusMutation.isPending) {
                         handleStatusSelect(status.value);
@@ -1446,9 +1435,8 @@ export default function AdminOrdersScreen() {
                   >
                     <Icon size={20} color={isCurrent ? "#0284C7" : "#64748B"} />
                     <Text
-                      className={`ml-3 flex-1 text-sm font-bold ${
-                        isCurrent ? "text-sky-700" : "text-slate-700"
-                      }`}
+                      className={`ml-3 flex-1 text-sm font-bold ${isCurrent ? "text-sky-700" : "text-slate-700"
+                        }`}
                     >
                       {status.label}
                     </Text>

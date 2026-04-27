@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Check } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -2973,6 +2973,7 @@ export default function UpdateOrderWizardScreen() {
   return (
     <FormProvider {...methods}>
       <View className="flex-1 bg-slate-50">
+        <Stack.Screen options={{ headerShown: false }} />
         <View className="pt-14 pb-4 px-5 bg-white border-b border-slate-200">
           <View className="flex-row items-center justify-between">
             <TouchableOpacity

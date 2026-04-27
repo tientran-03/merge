@@ -36,7 +36,7 @@ export const FormInput = forwardRef<TextInput, FormInputProps>(
     return (
       <View
         className={`mb-4 ${containerClassName}`}
-        style={[{ alignSelf: "stretch", width: "100%" }, containerStyle]}
+        style={[{ alignSelf: "stretch", flexGrow: 1, flexShrink: 1, minWidth: 0 }, containerStyle]}
       >
         {label && (
           <Text className="text-[13px] font-extrabold text-slate-700 mb-2">
@@ -62,7 +62,13 @@ export const FormInput = forwardRef<TextInput, FormInputProps>(
                   onChange(formatted);
                   if (validateOnChange) void trigger(name);
                 }}
-                onBlur={onBlur}
+                onBlur={(e) => {
+                  onBlur();
+                  (props as any).onBlur?.(e);
+                }}
+                onFocus={(e) => {
+                  (props as any).onFocus?.(e);
+                }}
                 keyboardType={keyboardType}
                 autoCapitalize={autoCapitalize}
                 editable={editable}
