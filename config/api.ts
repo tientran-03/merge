@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
   SAMPLE_ADD_SERVICE_BY_ID: (id: string) => `/api/v1/sample-add-services/${id}`,
 
   USERS: '/api/v1/user/list',
+  USER_CREATE: '/api/v1/user/create',
   USER_INFO: '/api/v1/user/info',
   USER_PROFILE: '/api/v1/user/profile',
   USER_PWD_CHANGE: '/api/v1/user/pwd/change',

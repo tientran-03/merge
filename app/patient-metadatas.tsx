@@ -74,7 +74,7 @@ const getStatusLabel = (status?: string): string => {
 };
 
 const getStatusPillClass = (status?: string) => {
-  const s = (status || "").toLowerCase();
+  const s = String(status || "").trim().toLowerCase();
   if (s === "sample_completed")
     return {
       bg: "bg-emerald-500/12",
@@ -103,15 +103,21 @@ const getStatusPillClass = (status?: string) => {
 };
 
 const isSampleCompletedStatus = (s?: string) =>
-  (s || "").toLowerCase() === "sample_completed";
+  String(s || "").trim().toLowerCase() === "sample_completed";
 
 /**
  * Phê duyệt đầu ra — khớp web `patient-metadata-list`: `sample_in_analyze` | `sample_rerun`.
  * Thêm `sample_completed` cho mobile khi pipeline đã xong mà cần chốt phiếu/đơn (không có trên nút web từng dòng).
  */
 const canApproveOutputSample = (s?: string) => {
-  const x = (s || "").toLowerCase();
-  return x === "sample_in_analyze" || x === "sample_rerun" || x === "sample_completed";
+  const x = String(s || "").trim().toLowerCase();
+  // `sample_added` (mẫu bổ sung) vẫn cần được "chốt" để phiếu/đơn có thể chuyển sang luồng trả kết quả.
+  return (
+    x === "sample_in_analyze" ||
+    x === "sample_rerun" ||
+    x === "sample_added" ||
+    x === "sample_completed"
+  );
 };
 
 /**
@@ -175,7 +181,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
   }
 
   const allSamplesCompleted = metadataRes.data.every(
-    (m) => String(m.status || "").toLowerCase() === "sample_completed",
+    (m) => String(m.status || "").trim().toLowerCase() === "sample_completed",
   );
 
   // Chỉ chuyển trạng thái phiếu/đơn khi TẤT CẢ mẫu (mọi labcode) của phiếu đã hoàn thành.
@@ -187,7 +193,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
         approvedLabcode,
         totalSamples: metadataRes.data.length,
         completedSamples: metadataRes.data.filter(
-          (m) => String(m.status || "").toLowerCase() === "sample_completed",
+          (m) => String(m.status || "").trim().toLowerCase() === "sample_completed",
         ).length,
       }),
     );
@@ -198,7 +204,7 @@ async function syncSpecifyAndOrderWhenAllSamplesCompleted(
   if (!order) {
     throw new Error(`Không tìm thấy đơn theo phiếu ${specifyId}.`);
   }
-  const ost = String(order.orderStatus || "").toLowerCase();
+  const ost = String(order.orderStatus || "").trim().toLowerCase();
   if (
     ost === "awaiting_results_approval" ||
     ost === "results_approved" ||
@@ -732,7 +738,7 @@ export default function PatientMetadatasScreen() {
     if (!canApproveOutputSample(metadata.status)) {
       Alert.alert(
         "Không hợp lệ",
-        "Chỉ phê duyệt khi mẫu đang phân tích, mẫu chạy lại, hoặc đã hoàn thành phân tích (giống web).",
+        "Chỉ phê duyệt khi mẫu đang phân tích, mẫu chạy lại, mẫu bổ sung, hoặc đã hoàn thành phân tích (giống web).",
       );
       return;
     }
@@ -744,7 +750,7 @@ export default function PatientMetadatasScreen() {
       return;
     }
     const alreadyPipelineDone =
-      (metadata.status || "").toLowerCase() === "sample_completed";
+      String(metadata.status || "").trim().toLowerCase() === "sample_completed";
     Alert.alert(
       "Duyệt kết quả đầu ra",
       alreadyPipelineDone
@@ -778,14 +784,6 @@ export default function PatientMetadatasScreen() {
                 queryClient.invalidateQueries({ queryKey: ["admin-test-results-orders"] });
                 queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
                 queryClient.invalidateQueries({ queryKey: ["orders"] });
-
-                // Với role admin: nếu đã đủ điều kiện chuyển sang giai đoạn trả KQ thì điều hướng luôn.
-                if (user?.role === ROLE_ADMIN && synced.transitioned) {
-                  router.push({
-                    pathname: "/admin/test-results",
-                    params: { q: synced.orderId || "" },
-                  } as any);
-                }
               }
               Alert.alert(
                 "Thành công",

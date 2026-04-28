@@ -21,6 +21,18 @@ export interface UserResponse {
   otpVerified?: boolean;
 }
 
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  phone: string;
+  dob?: string;
+  gender: string;
+  role: string;
+  hospitalName?: string;
+  password: string;
+  avatarUrl?: string;
+}
+
 export interface BlockUserRequest {
   userId: string;
   reason: string;
@@ -58,6 +70,11 @@ export const userService = {
       ? `${API_ENDPOINTS.USERS}?${queryParams.toString()}`
       : API_ENDPOINTS.USERS;
     return apiClient.get<UserResponse[]>(url);
+  },
+  create: async (
+    payload: CreateUserRequest,
+  ): Promise<{ success: boolean; data?: UserResponse; error?: string; message?: string }> => {
+    return apiClient.post<UserResponse>(API_ENDPOINTS.USER_CREATE, payload);
   },
   block: async (userId: string, reason: string): Promise<boolean> => {
     const response = await apiClient.post<boolean>(API_ENDPOINTS.USER_BLOCK, {
